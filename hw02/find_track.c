@@ -8,6 +8,7 @@ License: Creative Commons Attribution-ShareAlike 3.0
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <regex.h>
 
 #define NUM_TRACKS 5
 
@@ -20,16 +21,25 @@ char tracks[][80] = {
 };
 
 
-// Finds all tracks that contain the given string.
-//
-// Prints track number and title.
+//Finds all tracks that contain the given string.
+
+//Prints track number and title.
 void find_track(char search_for[])
 {
     int i;
-    for (i=0; i<NUM_TRACKS; i++) {
-	if (strstr(tracks[i], search_for)) {
-	    printf("Track %i: '%s'\n", i, tracks[i]);
-	}
+    int found_one = 0;
+    for (i=0; i<NUM_TRACKS; i++) 
+    {
+    	if (strstr(tracks[i], search_for)) 
+        {
+    	    printf("Track %i: '%s'\n", i, tracks[i]);
+            found_one = 1;
+    	}
+    }
+
+    if (!found_one)
+    {
+        printf("No track found\n");
     }
 }
 
@@ -38,15 +48,39 @@ void find_track(char search_for[])
 // Prints track number and title.
 void find_track_regex(char pattern[])
 {
-    // TODO: fill this in
+    int i;
+    int found_one = 0;
+    for (i=0; i<NUM_TRACKS; i++) 
+    {
+        regex_t re;
+        int ret;
+
+        if (regcomp(&re, pattern, REG_EXTENDED) != 0)
+            printf("fuck\n");
+
+        ret = regexec(&re, tracks[i], (size_t) 0, NULL, 0);
+        regfree(&re);
+
+        if (ret == 0)
+        {
+            printf("Track %i: '%s'\n", i, tracks[i]);
+            found_one = 1;
+        }
+    }
+
+    if (!found_one)
+    {
+        printf("No track found\n");
+    }
 }
 
 // Truncates the string at the first newline, if there is one.
 void rstrip(char s[])
 {
     char *ptr = strchr(s, '\n');
-    if (ptr) {
-	*ptr = '\0';
+    if (ptr) 
+    {
+        *ptr = '\0';
     }
 }
 
@@ -59,8 +93,38 @@ int main (int argc, char *argv[])
     fgets(search_for, 80, stdin);
     rstrip(search_for);
 
-    find_track(search_for);
-    //find_track_regex(search_for);
+    //find_track(search_for);
+    find_track_regex(search_for);
 
     return 0;
 }
+
+
+// int reg_matches(const char *str, const char *pattern)
+// {
+//     regex_t re;
+//     int ret;
+
+//     if (regcomp(&re, pattern, REG_EXTENDED) != 0)
+//         printf("fuck\n");
+
+//     ret = regexec(&re, str, (size_t) 0, NULL, 0);
+//     regfree(&re);
+
+//     if (ret == 0)
+//         printf("matttccchh\n");
+//     else
+//         printf("noooooo\n");
+// }
+
+// int main(void)
+// {
+//    static const char *pattern = "/foo/[0-9]";
+
+//    /* Going to return 1 always, since pattern wants the last part of the
+//     * path to be an unsigned integer */
+//    if (! reg_matches("/foo/1", pattern))
+//        return 1;
+
+//    return 0;
+// }
