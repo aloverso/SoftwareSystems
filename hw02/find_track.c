@@ -56,11 +56,14 @@ void find_track_regex(char pattern[])
         int ret;
 
         if (regcomp(&re, pattern, REG_EXTENDED) != 0)
-            printf("fuck\n");
+        {
+            printf("Not a valid regular expression\n");
+        }
 
         ret = regexec(&re, tracks[i], (size_t) 0, NULL, 0);
         regfree(&re);
 
+        // returns 0 if a match is found
         if (ret == 0)
         {
             printf("Track %i: '%s'\n", i, tracks[i]);
@@ -98,33 +101,3 @@ int main (int argc, char *argv[])
 
     return 0;
 }
-
-
-// int reg_matches(const char *str, const char *pattern)
-// {
-//     regex_t re;
-//     int ret;
-
-//     if (regcomp(&re, pattern, REG_EXTENDED) != 0)
-//         printf("fuck\n");
-
-//     ret = regexec(&re, str, (size_t) 0, NULL, 0);
-//     regfree(&re);
-
-//     if (ret == 0)
-//         printf("matttccchh\n");
-//     else
-//         printf("noooooo\n");
-// }
-
-// int main(void)
-// {
-//    static const char *pattern = "/foo/[0-9]";
-
-//    /* Going to return 1 always, since pattern wants the last part of the
-//     * path to be an unsigned integer */
-//    if (! reg_matches("/foo/1", pattern))
-//        return 1;
-
-//    return 0;
-// }
