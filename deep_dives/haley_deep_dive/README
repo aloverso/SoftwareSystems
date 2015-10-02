@@ -1,0 +1,37 @@
+RULES
+
+Use grep, sed, and awk to solve the puzzles below.  You can only use the command line.  Don't view the contents of any files unless instructed to.  Yay puzzles!
+
+-----------------
+
+PART ONE (grep)
+
+On which album by The Beatles would you find each of the following songs?  Use grep to search the album name in the "beatles_albums" file and record the line number next to each song. (And use Google to figure out which albums the songs are on, if you need to.)
+
+Yesterday:
+Eleanor Rigby:
+A Day in the Life:
+
+------------------
+
+PART TWO (sed)
+
+Where n is the sum of the line numbers found above, find the nth letter of the alphabet.  
+
+Sum:
+Letter (lowercase):
+
+Use sed to replace all instances of this letter in the "mystery_letter" file with a space (' ').  You can either edit in place, create an output file, or print to Standard Output.  Look at the contents of the file (or stdout) and record the letter that appears
+
+Mystery Letter (lowercase):
+
+------------------
+
+PART THREE (awk)
+
+
+Open the file called "awk_code" in your editor of choice.  Edit the code so that it prints every line containing the secret letter from the previous step.  Save the file and execute it on the command line with awk, using the file "final_message" as your input.
+
+If successful, you will see a final message from Haley.
+
+-------------------
