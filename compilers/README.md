@@ -12,7 +12,7 @@ $ gcc subfusc.c -o subfusc
 
 Then, run the program with the brainfuck code as arguments.  The argument structure of the program is as follows:
 ```
-$ ./compiler <brainfuck source code> <target assembly file> [target executable file]
+$ ./subfusc <brainfuck source code> <target assembly file> [target executable file]
 ```
 
 If you don't specify a target executable file, subfusc will create the assembly code, but you will have to assemble it yourself by running:
