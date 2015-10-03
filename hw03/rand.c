@@ -17,6 +17,9 @@
 
 */
 
+#include <stdint.h>
+#include <stdio.h>
+
 // generate a random float using the algorithm described
 // at allendowney.com/research/rand
 float my_random_float()
@@ -66,6 +69,7 @@ float my_random_float2()
   // generate random bits until we see the first set bit
   while (1) {
     x = random();
+    printf("%d\n", x);
     if (x == 0) {
       exp -= 31;
     } else {
@@ -119,37 +123,48 @@ double my_random_double()
 
 // alternative implementation of my algorithm that doesn't use
 // embedded assembly
-float my_random_double2()
+double my_random_double2()
 {
-  int x;
-  int mant;
-  int exp = 1022;
-  int mask = 1;
+  uint64_t x;
+  uint64_t mant;
+  uint64_t exp = 1023;
+  uint64_t mask = 1;
 
   union {
     double d;
-    int i;
+    uint64_t i;
   } b;
 
   // generate random bits until we see the first set bit
   while (1) {
     x = random();
     if (x == 0) {
-      exp -= 31;
+      exp -= 63;
     } else {
       break;
     }
   }
 
-  // find the location of the first set bit and compute the exponent
+  // find the location of the first set bit asnd compute the exponent
   while (x & mask) {
     mask <<= 1;
     exp--;
   }
 
   // use the remaining bit as the mantissa
-  mant = x >> 8;
-  b.i = (exp << 23) | mant;
+  mant = x >> 11;
+  b.i = (exp << 52) | mant;
+
+  long n = b.i;
+  while (n) {
+    if (n & 1)
+        printf("1");
+    else
+        printf("0");
+
+    n >>= 1;
+  }
+  printf("\n");
 
   return b.d;
 }
