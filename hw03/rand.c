@@ -77,15 +77,60 @@ float my_random_float2()
     }
   }
 
+
   // find the location of the first set bit and compute the exponent
   while (x & mask) {
     mask <<= 1;
     exp--;
   }
 
+  long a = x;
+  while (a) {
+    if (a & 1)
+        printf("1");
+    else
+        printf("0");
+
+    a >>= 1;
+  }
+  printf("that was x\n");
+
+  long c = exp;
+  while (c) {
+    if (c & 1)
+        printf("1");
+    else
+        printf("0");
+
+    c >>= 1;
+  }
+  printf("that was exp\n");
+
   // use the remaining bit as the mantissa
   mant = x >> 8;
+
+  long m = mant;
+  while (m) {
+    if (m & 1)
+        printf("1");
+    else
+        printf("0");
+
+    m >>= 1;
+  }
+  printf("that was mant\n");
   b.i = (exp << 23) | mant;
+
+  long n = b.i;
+  while (n) {
+    if (n & 1)
+        printf("1");
+    else
+        printf("0");
+
+    n >>= 1;
+  }
+  printf("\n");
 
   return b.f;
 }
@@ -121,11 +166,27 @@ double my_random_double()
   return b.d;
 }
 
+void print_binary (uint64_t long_num)
+{
+  long a = long_num;
+  while (a) {
+    if (a & 1)
+        printf("1");
+    else
+        printf("0");
+
+    a >>= 1;
+  }
+  printf("\n");
+}
+
 // alternative implementation of my algorithm that doesn't use
 // embedded assembly
 double my_random_double2()
 {
   uint64_t x;
+  uint64_t y;
+  uint64_t z;
   uint64_t mant;
   uint64_t exp = 1023;
   uint64_t mask = 1;
@@ -137,36 +198,28 @@ double my_random_double2()
 
   // generate random bits until we see the first set bit
   while (1) {
-    x = random();
-    if (x == 0) {
+    x = (uint64_t) random();
+    y = (uint64_t) random();
+    z = y << 32 | x;
+    if (x == 0 || y == 0) {
       exp -= 63;
     } else {
       break;
     }
   }
-
+ 
   // find the location of the first set bit asnd compute the exponent
-  while (x & mask) {
+  while (z & mask) {
     mask <<= 1;
     exp--;
   }
 
   // use the remaining bit as the mantissa
-  mant = x >> 11;
+  mant = z >> 11;
+
   b.i = (exp << 52) | mant;
 
-  long n = b.i;
-  while (n) {
-    if (n & 1)
-        printf("1");
-    else
-        printf("0");
-
-    n >>= 1;
-  }
-  printf("\n");
-
-  return b.d;
+  return b.d / 2.0;
 }
 
 // return a constant (this is a dummy function for time trials)

@@ -7,6 +7,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+
 #include "rand.c"
 
 main (int argc, char *argv[])
@@ -17,12 +18,10 @@ main (int argc, char *argv[])
   double t0, t1;
   int iters = 1000;
   int seed = 17;
-
   srandom (seed);
 
   for (i=0; i<iters; i++) {
     d = my_random_double2();
-
     printf ("%G\n", d);
   }
 }
