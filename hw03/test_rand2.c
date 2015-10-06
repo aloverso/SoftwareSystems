@@ -22,6 +22,7 @@ main (int argc, char *argv[])
 
   for (i=0; i<iters; i++) {
     d = my_random_double2();
+
     printf ("%G\n", d);
   }
 }

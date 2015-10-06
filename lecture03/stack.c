@@ -13,6 +13,7 @@ License: GNU GPLv3
 int *foo() {
     int i;
     int array[SIZE];
+    //int* array = malloc(SIZE);
 
     printf("%p\n", array);
 
@@ -37,7 +38,7 @@ int main()
 {
     int i;
     int *array = foo();
-    bar();
+    //bar();
 
     for (i=0; i<SIZE; i++) {
 	printf("%d\n", array[i]);

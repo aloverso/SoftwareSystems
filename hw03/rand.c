@@ -202,6 +202,7 @@ double my_random_double2()
     y = (uint64_t) random();
     z = y << 32 | x;
     if (x == 0 || y == 0) {
+
       exp -= 63;
     } else {
       break;
@@ -210,13 +211,13 @@ double my_random_double2()
  
   // find the location of the first set bit asnd compute the exponent
   while (z & mask) {
+
     mask <<= 1;
     exp--;
   }
 
   // use the remaining bit as the mantissa
   mant = z >> 11;
-
   b.i = (exp << 52) | mant;
 
   return b.d / 2.0;
