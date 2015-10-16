@@ -140,27 +140,26 @@ void play(int note, int duration, int LED)
   }
   counter = 0;
   OCR0A = note;
+
+  //Turn on LED
+  if (LED < 6){
+    digitalWrite(LED_pins[LED], HIGH);
+  }
+  else{
+    analogWrite(LED_pins[LED], 255);
+  }
     
   while (counter < duration){
-    //Turn on LED
-    if (LED < 6)
-    {
-      digitalWrite(LED_pins[LED], HIGH);
-    }
-    else
-    {
-      analogWrite(LED_pins[LED], 255);
-    }
+    //Wait until note is done playing.
   }
-
-    if (LED < 6)
-    {
-      digitalWrite(LED_pins[LED], LOW);
-    }
-    else
-    {
-      analogWrite(LED_pins[LED], 0);
-    }
+  
+  //Turn off LED
+  if (LED < 6){
+    digitalWrite(LED_pins[LED], LOW);
+  }
+  else{
+    analogWrite(LED_pins[LED], 0);
+  }
    
   no_notes = 0;
 }
