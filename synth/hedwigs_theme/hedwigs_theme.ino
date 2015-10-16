@@ -22,19 +22,18 @@
 // Definitions to access LED locations via notes
 #define LED_Bb_3 0
 #define LED_B_3 0
-#define LED_Ds_4 1
-#define LED_E_4 2
-#define LED_F_4 3
-#define LED_Fs_4 4
-#define LED_G_4 5
-#define LED_Ab_4 6
-#define LED_A_4 7
-#define LED_Bb_4 8
-#define LED_B_4 9
-#define LED_C_5 10
-#define LED_Db_5 11
+#define LED_Ds_4 0
+#define LED_E_4 1
+#define LED_F_4 2
+#define LED_Fs_4 3
+#define LED_G_4 4
+#define LED_Ab_4 5
+#define LED_A_4 6
+#define LED_Bb_4 7
+#define LED_B_4 8
+#define LED_C_5 9
+#define LED_Db_5 10
 #define LED_D_5 11
-#define LED_X 11
 
 // Array of LED pin numbers
 int LED_pins[] = {8, 9, 10, 11, 12, 13, A5, A4, A3, A2, A1, A0};
