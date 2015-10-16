@@ -19,6 +19,26 @@
 #define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
 #endif
 
+// Definitions to access LED locations via notes
+#define LED_Bb_3 0
+#define LED_B_3 0
+#define LED_Ds_4 1
+#define LED_E_4 2
+#define LED_F_4 3
+#define LED_Fs_4 4
+#define LED_G_4 5
+#define LED_Ab_4 6
+#define LED_A_4 7
+#define LED_Bb_4 8
+#define LED_B_4 9
+#define LED_C_5 10
+#define LED_Db_5 11
+#define LED_D_5 11
+#define LED_X 11
+
+// Array of LED pin numbers
+int LED_pins[] = {8, 9, 10, 11, 12, 13, A5, A4, A3, A2, A1, A0};
+
 byte sine[] = {127, 134, 142, 150, 158, 166, 173, 181, 188, 195, 201, 207, 213, 219, 224, 229, 234, 238, 241, 245, 247, 250, 251, 252, 253, 254, 253, 252, 251, 250, 247, 245, 241, 238, 234, 229, 224, 219, 213, 207, 201, 195, 188, 181, 173, 166, 158, 150, 142, 134, 127, 119, 111, 103, 95, 87, 80, 72, 65, 58, 52, 46, 40, 34, 29, 24, 19, 15, 12, 8, 6, 3, 2, 1, 0, 0, 0, 1, 2, 3, 6, 8, 12, 15, 19, 24, 29, 34, 40, 46, 52, 58, 65, 72, 80, 87, 95, 103, 111, 119,};
 int t = 0;//time
 
@@ -28,40 +48,37 @@ int no_notes = 0;
  // NOTES //
 ///////////
 const float X = 0;
-const float C_3 = (10000/(130.81/2));
-const float D_3 = (10000/(146.83/2));
-const float E_3 = (10000/(164.81/2));
-const float F_3 = (10000/(174.61/2));
-const float G_3 = (10000/(196.00/2));
-const float A_3 = (10000/(220.00/2));
-const float B_3 = (10000/(246.94/2));
-const float Bb_3 = (10000/(233.08/2));
-const float C_4 = (10000/(261.63/2));
-const float Db_4 = (10000/(277.18/2));
-const float D_4 = (10000/(293.66/2));
-const float Ds_4 = (10000/(311.13/2));
-const float E_4 = (10000/(329.63/2));
-const float F_4 = (10000/(349.23/2));
-const float Fs_4 = (10000/(369.99/2));
-const float G_4 = (10000/(392.00/2));
-const float Ab_4 = (10000/(415.30/2));
-const float A_4 = (10000/(440.00/2));
-const float Bb_4 = (10000/(466.16/2));
-const float B_4 = (10000/(493.88/2));
-const float C_5 = (10000/(523.25/2));
-const float Db_5 = (10000/(554.37/2));
-const float D_5 = (10000/(587.33/2));
+const float E_3 = (10000/(164.81/2)); //MAR
+const float G_3 = (10000/(196.00/2)); //MAR
+const float A_3 = (10000/(220.00/2)); //MAR
+const float Bb_3 = (10000/(233.08/2)); //HT
+const float B_3 = (10000/(246.94/2)); //HT, MAR
+const float C_4 = (10000/(261.63/2)); //MAR
+const float D_4 = (10000/(293.66/2)); //MAR
+const float Ds_4 = (10000/(311.13/2)); //HT
+const float E_4 = (10000/(329.63/2)); //HT, MAR
+const float F_4 = (10000/(349.23/2)); //HT, MAR
+const float Fs_4 = (10000/(369.99/2)); //HT
+const float G_4 = (10000/(392.00/2)); //HT, MAR
+const float Ab_4 = (10000/(415.30/2)); //HT
+const float A_4 = (10000/(440.00/2)); //HT, MAR
+const float Bb_4 = (10000/(466.16/2)); //HT
+const float B_4 = (10000/(493.88/2)); //HT
+const float C_5 = (10000/(523.25/2)); //HT
+const float Db_5 = (10000/(554.37/2)); //HT
+const float D_5 = (10000/(587.33/2)); //HT
 
+//10 Mario notes, 14 Hedwig notes, 19 total notes
 
 volatile int counter = 0;
 
 void setup(){
-  //set digital pins 0-7 as outputs
-  for (int i=0;i<8;i++){
+  
+  //set digital pins 0-13 as outputs
+  for (int i=0;i<14;i++){
     pinMode(i,OUTPUT);
   }
-  pinMode(9, OUTPUT);
-  pinMode(10, OUTPUT);
+
   cli();//disable interrupts
   //set timer0 interrupt at 40kHz
   TCCR0A = 0;// set entire TCCR0A register to 0
@@ -109,14 +126,14 @@ ISR(TIMER0_COMPA_vect){ //40kHz interrupt routine
   
 }
 
-ISR(TIMER1_COMPA_vect){ //40kHz interrupt routine
-  counter++;
+ISR(TIMER1_COMPA_vect){ //1Hz interrupt routine
+  counter++;  
 }
 
 unsigned long volatile prev = 0;
 
 // duration in eigths of a second
-void play(int note, int duration)
+void play(int note, int duration, int LED)
 {
   if (note == 0)
   {
@@ -124,52 +141,73 @@ void play(int note, int duration)
   }
   counter = 0;
   OCR0A = note;
+    
   while (counter < duration){
+    //Turn on LED
+    if (LED < 6)
+    {
+      digitalWrite(LED_pins[LED], HIGH);
+    }
+    else
+    {
+      analogWrite(LED_pins[LED], 255);
+    }
   }
+
+    if (LED < 6)
+    {
+      digitalWrite(LED_pins[LED], LOW);
+    }
+    else
+    {
+      analogWrite(LED_pins[LED], 0);
+    }
+   
   no_notes = 0;
 }
 
+
 void loop(){
-  play(B_3, 3);
-  play(E_4, 4);
-  play(G_4, 1);
-  play(Fs_4, 3);
-  play(E_4, 6);
+  play(B_3, 3, LED_B_3);
+  play(E_4, 4, LED_E_4);
+  play(G_4, 1, LED_G_4);
+  play(Fs_4, 3, LED_Fs_4);
+  play(E_4, 6, LED_E_4);
   
-  play(B_4, 3);
-  play(A_4, 8);
-  play(Fs_4, 8);
+  play(B_4, 3, LED_B_4);
+  play(A_4, 8, LED_A_4);
+  play(Fs_4, 8, LED_Fs_4);
   
-  play(E_4, 4);
-  play(G_4, 1);
-  play(Fs_4, 3);
-  play(Ds_4, 6);
+  play(E_4, 4, LED_E_4);
+  play(G_4, 1, LED_G_4);
+  play(Fs_4, 3, LED_Fs_4);
+  play(Ds_4, 6, LED_Ds_4);
   
-  play(F_4, 3);
-  play(B_3, 8);
+  play(F_4, 3, LED_F_4);
+  play(B_3, 8, LED_B_3);
 
-  play(X,4);
+  play(X, 4, -1);
 
-  play(B_3, 3);
-  play(E_4, 4);
-  play(G_4, 1);
-  play(Fs_4, 3);
-  play(E_4, 6);
+  play(B_3, 3, LED_B_3);
+  play(E_4, 4, LED_E_4);
+  play(G_4, 1, LED_G_4);
+  play(Fs_4, 3, LED_Fs_4);
+  play(E_4, 6, LED_E_4);
   
-  play(B_4, 3);  
-  play(D_5, 6);
-  play(Db_5, 3);
-  play(C_5, 6);
+  play(B_4, 3, LED_B_4);  
+  play(D_5, 6, LED_D_5);
+  play(Db_5, 3, LED_Db_5);
+  play(C_5, 6, LED_C_5);
   
-  play(Ab_4, 3);
-  play(C_5, 4);
-  play(B_4, 1);
-  play(Bb_4, 3);
-  play(Bb_3, 6);
+  play(Ab_4, 3, LED_Ab_4);
+  play(C_5, 4, LED_C_5);
+  play(B_4, 1, LED_B_4);
+  play(Bb_4, 3, LED_Bb_4);
+  play(Bb_3, 6, LED_Bb_3);
   
-  play(G_4, 3);
-  play(E_4, 8); 
+  play(G_4, 3, LED_G_4);
+  play(E_4, 8, LED_E_4); 
 
-  play(X,12);
+  play(X, 10, -1);
 }
 
