@@ -34,15 +34,14 @@ void print_list(Node *head) {
 int pop(Node **head) {
     int retval;
     Node *next_node;
+    Node *first = *head;
 
-    if (*head == NULL) {
+    if (first == NULL) {
         return -1;
     }
 
-    Node *first = *head;
-
-    next_node = first->next;
-    retval = first->val;
+    next_node = (first)->next;
+    retval = (first)->val;
     free(first);
     *head = next_node;
 
@@ -51,35 +50,39 @@ int pop(Node **head) {
 
 // Add a new element to the beginning of the list.
 void push(Node **head, int val) {
-    if (*head == NULL) {
-        return;
-    }
-
-    Node *new_node = make_node(val, *head);
-    *head = new_node;
+    Node *first_node = make_node(val, *head);
+    *head = first_node;
 }
 
 // Remove the first element with the given value; return the number
 // of nodes removed.
 int remove_by_value(Node **head, int val) {
-    Node *current = *head;
-    int count = 0;
+    Node *node = *head;
+    Node *victim;
 
-    while (current != NULL && current->val != val) {
-        pop(&current);
-        count++;
+    if (node == NULL) {
+        return 0;
     }
-    if (current != NULL)
-    {
-        Node *next_node = current->next;
-        free(current);
-        *head = next_node;
-        return count+1;
+
+    if (node->val == val) {
+        pop(head);
+        return 1;
     }
-    else
-    {
-        *head = NULL;
-        return -1;
+
+    while (node != NULL && node->val != val) {
+        if (node->next->val == val){
+            victim = node->next;
+            node->next = victim->next;
+            free(victim);
+            return 1;
+        }
+
+        if (node->next != NULL){
+            node = node->next;
+        }
+        else{
+            return 0;
+        }
     }
 }
 
@@ -113,6 +116,8 @@ int main() {
     push(&test_list, 1);
     push(&test_list, 2);
     push(&test_list, 3);
+
+    remove_by_value(&test_list, 11);
 
     print_list(test_list);
 
