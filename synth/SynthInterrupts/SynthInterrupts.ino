@@ -92,7 +92,6 @@ void loop(){
 
   counter = 0;
   OCR0A = C_4;
-  
   while (counter < 2){
     digitalWrite(9, LOW);
     digitalWrite(10, HIGH);
@@ -105,7 +104,7 @@ void loop(){
     digitalWrite(10, LOW);
   }
 
-    counter = 0;
+  counter = 0;
   OCR0A = G_4;
   while(counter < 2){
     digitalWrite(9, HIGH);
