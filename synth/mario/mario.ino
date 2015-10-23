@@ -55,7 +55,8 @@ void setup(){
   pinMode(9, OUTPUT);
   pinMode(10, OUTPUT);
   cli();//disable interrupts
-  //set timer0 interrupt at 40kHz
+  
+  //set timer0 to interrupt at specified frequency, setting pitch of note.
   TCCR0A = 0;// set entire TCCR0A register to 0
   TCCR0B = 0;// same for TCCR0B
   TCNT0  = 0;//initialize counter value to 0
@@ -69,7 +70,7 @@ void setup(){
   TIMSK0 |= (1 << OCIE0A);
   sei();//enable interrupts
 
-  //set timer1 interrupt at 1Hz
+  //set timer1 interrupt at 1Hz to set metronome for song
   TCCR1A = 0;// set entire TCCR1A register to 0
   TCCR1B = 0;// same for TCCR1B
   TCNT1  = 0;//initialize counter value to 0
