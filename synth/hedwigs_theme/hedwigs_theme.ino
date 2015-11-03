@@ -80,7 +80,7 @@ void setup(){
   }
 
   cli();//disable interrupts
-  //set timer0 interrupt at 40kHz
+  //set timer0 to interrupt at specified frequency to set pitch of note
   TCCR0A = 0;// set entire TCCR0A register to 0
   TCCR0B = 0;// same for TCCR0B
   TCNT0  = 0;//initialize counter value to 0
@@ -94,7 +94,7 @@ void setup(){
   TIMSK0 |= (1 << OCIE0A);
   sei();//enable interrupts
 
-  //set timer1 interrupt at 1Hz
+  //set timer1 interrupt at 1Hz to set a metronome for song
   TCCR1A = 0;// set entire TCCR1A register to 0
   TCCR1B = 0;// same for TCCR1B
   TCNT1  = 0;//initialize counter value to 0
@@ -109,7 +109,7 @@ void setup(){
 }
 
 
-ISR(TIMER0_COMPA_vect){ //40kHz interrupt routine
+ISR(TIMER0_COMPA_vect){ //Sends sine wave values to DAC at specified frequency
   if (no_notes < 0)
   {
     PORTD = 0;
@@ -126,7 +126,7 @@ ISR(TIMER0_COMPA_vect){ //40kHz interrupt routine
   
 }
 
-ISR(TIMER1_COMPA_vect){ //1Hz interrupt routine
+ISR(TIMER1_COMPA_vect){ //1Hz interrupt routine that increments a counter
   counter++;  
 }
 
