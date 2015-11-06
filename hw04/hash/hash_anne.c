@@ -104,6 +104,7 @@ void print_hashable(Hashable *hashable)
 /* Hashes an integer. */
 int hash_int(void *p)
 {
+    //printf("%d\n", *(int *)p);
     return *(int *)p;
 }
 
@@ -133,24 +134,22 @@ int hash_hashable(Hashable *hashable)
 /* Compares integers. */
 int equal_int (void *ip, void *jp)
 {
-    // FIX ME!
-    return 0;
+    return hash_int(ip) == hash_int(jp);
 }
 
 
 /* Compares strings. */
 int equal_string (void *s1, void *s2)
 {
-    // FIX ME!
-    return 0;
+    return hash_string(s1) == hash_string(s2);
 }
 
 
 /* Compares Hashables. */
 int equal_hashable(Hashable *h1, Hashable *h2)
 {
-    // FIX ME!
-    return 0;
+
+    return hash_hashable(h1) == hash_hashable(h2);
 }
 
 
@@ -189,8 +188,11 @@ typedef struct node {
 /* Makes a Node. */
 Node *make_node(Hashable *key, Value *value, Node *next)
 {
-    // FIX ME!
-    return NULL;
+    Node *node = (Node *) malloc (sizeof (Node));
+    node->key = key;
+    node->value = value;
+    node->next = next;
+    return node;
 }
 
 
@@ -206,7 +208,12 @@ void print_node(Node *node)
 /* Prints all the Nodes in a list. */
 void print_list(Node *node)
 {
-    // FIX ME!
+    Node *current = node;
+
+    while (current != NULL) {
+        print_value(current->value);
+        current = current->next;
+    }
 }
 
 
@@ -223,7 +230,14 @@ Node *prepend(Hashable *key, Value *value, Node *rest)
 /* Looks up a key and returns the corresponding value, or NULL */
 Value *list_lookup(Node *list, Hashable *key)
 {
-    // FIX ME!
+    Node *current = list;
+
+    while (current != NULL) {
+        if (equal_hashable(current->key, key)) {
+            return current->value;
+        }
+        current = current->next;
+    }
     return NULL;
 }
 
@@ -232,15 +246,21 @@ Value *list_lookup(Node *list, Hashable *key)
 
 typedef struct map {
     int n;
-    Node **lists;
+    Node **lists; // a pointer to a list of node-lists
 } Map;
 
 
 /* Makes a Map with n lists. */
 Map *make_map(int n)
 {
-    // FIX ME!
-    return NULL;
+    Map *map = (Map *) malloc (sizeof (Map));
+    map->n = n;
+    map->lists = (Node **) malloc (sizeof (Node *) * n);
+    int i;
+    for (i=0; i<n; i++) {
+        map->lists[i] = NULL; // set all lists to null
+    }
+    return map;
 }
 
 
@@ -250,10 +270,10 @@ void print_map(Map *map)
     int i;
 
     for (i=0; i<map->n; i++) {
-	if (map->lists[i] != NULL) {
-	    printf ("%d\n", i);
-	    print_list (map->lists[i]);
-	}
+    	if (map->lists[i] != NULL) {
+    	    printf ("%d\n", i);
+    	    print_list (map->lists[i]);
+    	}
     }
 }
 
@@ -261,15 +281,21 @@ void print_map(Map *map)
 /* Adds a key-value pair to a map. */
 void map_add(Map *map, Hashable *key, Value *value)
 {
-    // FIX ME!
+    int hashval = hash_hashable(key) % map->n;
+    Node *list = map->lists[hashval];
+    
+    map->lists[hashval] = prepend(key, value, list);
+
 }
 
 
 /* Looks up a key and returns the corresponding value, or NULL. */
 Value *map_lookup(Map *map, Hashable *key)
 {
-    // FIX ME!
-    return NULL;
+    int hashval = hash_hashable(key) % map->n;
+    Node *list = map->lists[hashval];
+    
+    return list_lookup(list, key);
 }
 
 
