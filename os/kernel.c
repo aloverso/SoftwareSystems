@@ -6,6 +6,61 @@
 
 #include "test.h"
 
+#define GPIO_BASE       0x3F200000UL
+
+#define LED_GPFSEL      GPIO_GPFSEL4
+#define LED_GPFBIT      21
+#define LED_GPSET       GPIO_GPSET1
+#define LED_GPCLR       GPIO_GPCLR1
+#define LED_GPIO_BIT    15
+
+#define GPIO_GPFSEL0    0
+#define GPIO_GPFSEL1    1
+#define GPIO_GPFSEL2    2
+#define GPIO_GPFSEL3    3
+#define GPIO_GPFSEL4    4
+#define GPIO_GPFSEL5    5
+
+#define GPIO_GPSET0     7
+#define GPIO_GPSET1     8
+
+#define GPIO_GPCLR0     10
+#define GPIO_GPCLR1     11
+
+#define GPIO_GPLEV0     13
+#define GPIO_GPLEV1     14
+
+#define GPIO_GPEDS0     16
+#define GPIO_GPEDS1     17
+
+#define GPIO_GPREN0     19
+#define GPIO_GPREN1     20
+
+#define GPIO_GPFEN0     22
+#define GPIO_GPFEN1     23
+
+#define GPIO_GPHEN0     25
+#define GPIO_GPHEN1     26
+
+#define GPIO_GPLEN0     28
+#define GPIO_GPLEN1     29
+
+#define GPIO_GPAREN0    31
+#define GPIO_GPAREN1    32
+
+#define GPIO_GPAFEN0    34
+#define GPIO_GPAFEN1    35
+
+#define GPIO_GPPUD      37
+#define GPIO_GPPUDCLK0  38
+#define GPIO_GPPUDCLK1  39
+
+/** GPIO Register set */
+volatile unsigned int* gpio;
+
+/** Simple loop variable */
+volatile unsigned int tim;
+
 size_t terminal_row;
 size_t terminal_column;
 uint8_t terminal_color;
@@ -40,7 +95,7 @@ static inline void delay(int32_t count)
 enum
 {
     // The GPIO registers base address.
-    GPIO_BASE = 0x20200000,
+    //GPIO_BASE = 0x20200000,
  
     // The offsets for reach register.
  
@@ -81,8 +136,8 @@ void uart_init()
 	// Setup the GPIO pin 14 && 15.
  
 	// Disable pull up/down for all GPIO pins & delay for 150 cycles.
-	mmio_write(GPPUD, 0x00000000);
-	delay(150);
+	//mmio_write(GPPUD, 0x00000000);
+	//delay(150);
  
 	// Disable pull up/down for pin 14,15 & delay for 150 cycles.
 	mmio_write(GPPUDCLK0, (1 << 14) | (1 << 15));
@@ -173,12 +228,68 @@ extern "C" /* Use C linkage for kernel_main. */
 #endif
 void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
 {
+
 	(void) r0;
 	(void) r1;
 	(void) atags;
  
 	uart_init();
 	uart_puts("Hello, kernel World!\r\n");
+
+	// int x = get_n();
+	// x++;
+	// char str[15];
+	// char *s = itoa(x, str);
+	// uart_puts(s);
+	// x++;
+
+	/* Assign the address of the GPIO peripheral (Using ARM Physical Address) */
+    gpio = (unsigned int*)GPIO_BASE;
+
+    /* Write 1 to the GPIO16 init nibble in the Function Select 1 GPIO
+       peripheral register to enable GPIO16 as an output */
+    gpio[LED_GPFSEL] |= (1 << LED_GPFBIT);
+
+	while ( true )
+	{
+		for(tim = 0; tim < 500000; tim++)
+            ;
+
+        /* Set the LED GPIO pin low ( Turn OK LED on for original Pi, and off
+           for plus models )*/
+        gpio[LED_GPCLR] = (1 << LED_GPIO_BIT);
+
+        for(tim = 0; tim < 500000; tim++)
+            ;
+
+        /* Set the LED GPIO pin high ( Turn OK LED off for original Pi, and on
+           for plus models )*/
+        gpio[LED_GPSET] = (1 << LED_GPIO_BIT);
+		// char x = uart_getc();
+		// uart_putc(x);
+		// if (x == '+')
+		// {
+		// 	unsigned char a = uart_getc();
+		// 	uart_putc(a);
+		// 	unsigned char b = uart_getc();
+		// 	uart_putc(b);
+		// 	int i = add(a,b);
+		// 	char str[15];
+		// 	char *s = itoa(i, str);
+		// 	uart_puts(s);
+		// }
+		//uart_puts("Hello, kernel World!\r\n");
+	}
+
+	(void) r0;
+	(void) r1;
+	(void) atags;
+ 
+	uart_init();
+	uart_puts("Hello, kernel World!\r\n");
+
+	volatile unsigned int *gpio = (unsigned int*)GPIO_BASE;
+	gpio[4] |= (1 << 21);
  	
  	int x = get_n();
  	x++;
@@ -187,20 +298,4 @@ void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
 	uart_puts(s);
 	x++;
 
-	while ( true )
-	{
-		char x = uart_getc();
-		uart_putc(x);
-		if (x == '+')
-		{
-			unsigned char a = uart_getc();
-			uart_putc(a);
-			unsigned char b = uart_getc();
-			uart_putc(b);
-			int i = add(a,b);
-			char str[15];
-			char *s = itoa(i, str);
-			uart_puts(s);
-		}
-	}
 }
