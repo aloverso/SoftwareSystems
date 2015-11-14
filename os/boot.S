@@ -34,6 +34,7 @@ _start:
  
 	// Call kernel_main
 	ldr r3, =kernel_main
+	//ldr r3,=kernel_init
 	blx r3
  
 	// halt

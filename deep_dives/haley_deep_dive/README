@@ -8,9 +8,9 @@ PART ONE (grep)
 
 On which album by The Beatles would you find each of the following songs?  Use grep to search the album name in the "beatles_albums" file and record the line number next to each song. (And use Google to figure out which albums the songs are on, if you need to.)
 
-Yesterday:
-Eleanor Rigby:
-A Day in the Life:
+Yesterday: 4
+Eleanor Rigby: 6
+A Day in the Life: 7
 
 ------------------
 
@@ -18,12 +18,12 @@ PART TWO (sed)
 
 Where n is the sum of the line numbers found above, find the nth letter of the alphabet.  
 
-Sum:
-Letter (lowercase):
+Sum: 17
+Letter (lowercase): q
 
 Use sed to replace all instances of this letter in the "mystery_letter" file with a space (' ').  You can either edit in place, create an output file, or print to Standard Output.  Look at the contents of the file (or stdout) and record the letter that appears
 
-Mystery Letter (lowercase):
+Mystery Letter (lowercase): u
 
 ------------------
 
