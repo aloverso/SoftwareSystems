@@ -5,7 +5,6 @@
 #include <stdint.h>
 
 #include "test.h"
-<<<<<<< HEAD
 #include "tty.h"
 #include "calc.h"
 
