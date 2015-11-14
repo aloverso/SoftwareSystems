@@ -5,61 +5,8 @@
 #include <stdint.h>
 
 #include "test.h"
-
-#define GPIO_BASE       0x3F200000UL
-
-#define LED_GPFSEL      GPIO_GPFSEL4
-#define LED_GPFBIT      21
-#define LED_GPSET       GPIO_GPSET1
-#define LED_GPCLR       GPIO_GPCLR1
-#define LED_GPIO_BIT    15
-
-#define GPIO_GPFSEL0    0
-#define GPIO_GPFSEL1    1
-#define GPIO_GPFSEL2    2
-#define GPIO_GPFSEL3    3
-#define GPIO_GPFSEL4    4
-#define GPIO_GPFSEL5    5
-
-#define GPIO_GPSET0     7
-#define GPIO_GPSET1     8
-
-#define GPIO_GPCLR0     10
-#define GPIO_GPCLR1     11
-
-#define GPIO_GPLEV0     13
-#define GPIO_GPLEV1     14
-
-#define GPIO_GPEDS0     16
-#define GPIO_GPEDS1     17
-
-#define GPIO_GPREN0     19
-#define GPIO_GPREN1     20
-
-#define GPIO_GPFEN0     22
-#define GPIO_GPFEN1     23
-
-#define GPIO_GPHEN0     25
-#define GPIO_GPHEN1     26
-
-#define GPIO_GPLEN0     28
-#define GPIO_GPLEN1     29
-
-#define GPIO_GPAREN0    31
-#define GPIO_GPAREN1    32
-
-#define GPIO_GPAFEN0    34
-#define GPIO_GPAFEN1    35
-
-#define GPIO_GPPUD      37
-#define GPIO_GPPUDCLK0  38
-#define GPIO_GPPUDCLK1  39
-
-/** GPIO Register set */
-volatile unsigned int* gpio;
-
-/** Simple loop variable */
-volatile unsigned int tim;
+#include "led.h"
+#include "tools.h"
 
 size_t terminal_row;
 size_t terminal_column;
@@ -82,15 +29,7 @@ static inline void mmio_write(uint32_t reg, uint32_t data)
 static inline uint32_t mmio_read(uint32_t reg)
 {
 	return *(volatile uint32_t *)reg;
-}
- 
-/* Loop <delay> times in a way that the compiler won't optimize away. */
-static inline void delay(int32_t count)
-{
-	asm volatile("__delay_%=: subs %[count], %[count], #1; bne __delay_%=\n"
-		 : : [count]"r"(count) : "cc");
-}
- 
+} 
 
 enum
 {
@@ -177,7 +116,7 @@ void uart_putc(unsigned char byte)
 	mmio_write(UART0_DR, byte);
 	//mmio_write(UART0_DR, byte);
 }
- 
+
 unsigned char uart_getc()
 {
     // Wait for UART to have recieved something.
@@ -226,6 +165,24 @@ char* itoa(int i, char b[]){
 #if defined(__cplusplus)
 extern "C" /* Use C linkage for kernel_main. */
 #endif
+int calc(void){
+	return 1;
+}
+void kernel_init(void){
+	uart_init();
+	uart_puts("Hello, in kernel_init\r\n");
+
+	//terminal_initialize();
+}
+
+void reset_string(char instr[], int array_size){
+	int j = 0;
+	while (j < array_size){
+		instr[j] = 0x00;
+		j++;
+	}
+}
+
 void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
 {
 
@@ -234,7 +191,7 @@ void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
 	(void) atags;
  
 	uart_init();
-	uart_puts("Hello, kernel World!\r\n");
+	//uart_puts("Hello, in kernel_init\r\n");
 
 	// int x = get_n();
 	// x++;
@@ -243,59 +200,60 @@ void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
 	// uart_puts(s);
 	// x++;
 
+	/** GPIO Register set */
+	volatile unsigned int *gpio = led_init();
+
 	/* Assign the address of the GPIO peripheral (Using ARM Physical Address) */
-    gpio = (unsigned int*)GPIO_BASE;
+    //gpio = (unsigned int*)GPIO_BASE;
 
     /* Write 1 to the GPIO16 init nibble in the Function Select 1 GPIO
        peripheral register to enable GPIO16 as an output */
-    gpio[LED_GPFSEL] |= (1 << LED_GPFBIT);
-
-	while ( true )
-	{
-		for(tim = 0; tim < 500000; tim++)
-            ;
-
-        /* Set the LED GPIO pin low ( Turn OK LED on for original Pi, and off
-           for plus models )*/
-        gpio[LED_GPCLR] = (1 << LED_GPIO_BIT);
-
-        for(tim = 0; tim < 500000; tim++)
-            ;
-
-        /* Set the LED GPIO pin high ( Turn OK LED off for original Pi, and on
-           for plus models )*/
-        gpio[LED_GPSET] = (1 << LED_GPIO_BIT);
-		// char x = uart_getc();
-		// uart_putc(x);
-		// if (x == '+')
-		// {
-		// 	unsigned char a = uart_getc();
-		// 	uart_putc(a);
-		// 	unsigned char b = uart_getc();
-		// 	uart_putc(b);
-		// 	int i = add(a,b);
-		// 	char str[15];
-		// 	char *s = itoa(i, str);
-		// 	uart_puts(s);
-		// }
-		//uart_puts("Hello, kernel World!\r\n");
-	}
+    //gpio[LED_GPFSEL] |= (1 << LED_GPFBIT);
 
 	(void) r0;
 	(void) r1;
 	(void) atags;
  
 	uart_init();
-	uart_puts("Hello, kernel World!\r\n");
+	uart_puts("> Hello, kernel World!\r\n");
 
-	volatile unsigned int *gpio = (unsigned int*)GPIO_BASE;
-	gpio[4] |= (1 << 21);
+	int str_len = 80;
+	char stringin[str_len];
+	int i=0;
+	uart_puts("> ");
+
+	while (true){
+		led_blink(gpio, .25);
+		stringin[i] = uart_getc();
+		//Checks if current str is being written outside size allotment
+		if (i > str_len-1){
+			uart_puts(stringin);
+			reset_string(stringin, str_len);
+			uart_puts("Max string\r\n");
+			i = 0;
+		}
+		else if (stringin[i] == '\r'){
+			uart_puts("\r\n");
+			stringin[i+1] = '\n';
+			uart_puts(stringin);
+			reset_string(stringin, str_len);
+			uart_puts("> ");
+			i = 0;
+		}
+		else{
+			uart_putc(stringin[i]);
+			i++;
+		}
+
+	}
+	// volatile unsigned int *gpio = (unsigned int*)GPIO_BASE;
+	// gpio[4] |= (1 << 21);
  	
- 	int x = get_n();
- 	x++;
- 	char str[15];
-	char *s = itoa(x, str);
-	uart_puts(s);
-	x++;
+ // 	int x = get_n();
+ // 	x++;
+ // 	char str[15];
+	// char *s = itoa(x, str);
+	// uart_puts(s);
+	// x++;
 
 }
