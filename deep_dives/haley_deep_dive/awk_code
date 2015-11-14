@@ -2,6 +2,6 @@
 
 BEGIN { print "Haley says...\n" }
 
-/_/ { print $0 }
+/u/ { print $0 }
 
 END { print "\n...such awe-inspiring wisdom." }

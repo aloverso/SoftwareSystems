@@ -52,7 +52,7 @@ int main()
 	
 	int hours_of_hw[] = {4, 5, 1, 3, 8, 6, 5};
 
-	int *current_day = hours_of_hw;
+	int current_day = hours_of_hw;
 	while (current_day < hours_of_hw + sizeof(hours_of_hw)/sizeof(int))
 	{
 		do_work(*current_day, anne);

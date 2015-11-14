@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #include "test.h"
+<<<<<<< HEAD
 #include "tty.h"
 #include "calc.h"
 
@@ -62,6 +63,8 @@ volatile unsigned int* gpio;
 
 /** Simple loop variable */
 volatile unsigned int tim;
+#include "led.h"
+#include "tools.h"
 
 size_t terminal_row;
 size_t terminal_column;
@@ -84,15 +87,7 @@ static inline void mmio_write(uint32_t reg, uint32_t data)
 static inline uint32_t mmio_read(uint32_t reg)
 {
 	return *(volatile uint32_t *)reg;
-}
- 
-/* Loop <delay> times in a way that the compiler won't optimize away. */
-static inline void delay(int32_t count)
-{
-	asm volatile("__delay_%=: subs %[count], %[count], #1; bne __delay_%=\n"
-		 : : [count]"r"(count) : "cc");
-}
- 
+} 
 
 enum
 {
@@ -277,12 +272,15 @@ void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
 	// uart_puts(s);
 	// x++;
 
+	/** GPIO Register set */
+	volatile unsigned int *gpio = led_init();
+
 	/* Assign the address of the GPIO peripheral (Using ARM Physical Address) */
-    gpio = (unsigned int*)GPIO_BASE;
+    //gpio = (unsigned int*)GPIO_BASE;
 
     /* Write 1 to the GPIO16 init nibble in the Function Select 1 GPIO
        peripheral register to enable GPIO16 as an output */
-    gpio[LED_GPFSEL] |= (1 << LED_GPFBIT);
+    //gpio[LED_GPFSEL] |= (1 << LED_GPFBIT);
 
 	(void) r0;
 	(void) r1;
@@ -298,6 +296,7 @@ void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
 	int str_comp = 0;
 
 	while (true){
+		led_blink(gpio, .25);
 		stringin[i] = uart_getc();
 		//Checks if current str is being written outside size allotment
 		if (i > str_len-1){
@@ -326,15 +325,14 @@ void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
 		}
 
 	}
-
-	volatile unsigned int *gpio = (unsigned int*)GPIO_BASE;
-	gpio[4] |= (1 << 21);
+	// volatile unsigned int *gpio = (unsigned int*)GPIO_BASE;
+	// gpio[4] |= (1 << 21);
  	
- 	int x = get_n();
- 	x++;
- 	char str[15];
-	char *s = itoa(x, str);
-	uart_puts(s);
-	x++;
+ // 	int x = get_n();
+ // 	x++;
+ // 	char str[15];
+	// char *s = itoa(x, str);
+	// uart_puts(s);
+	// x++;
 
 }
