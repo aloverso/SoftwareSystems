@@ -6,6 +6,7 @@
 
 #include "test.h"
 #include "tty.h"
+#include "calc.h"
 
 #define GPIO_BASE       0x3F200000UL
 
@@ -245,6 +246,20 @@ void reset_string(char instr[], int array_size){
 	}
 }
 
+int compare_str(char str1[], char str2[]){
+	size_t j = 0;
+	size_t str1_size = strlen(str1);
+	size_t str2_size = strlen(str2);
+
+	while ((j < str1_size) && (j < str2_size)){
+		if (str1[j] != str2[j]){
+			return 0;
+		}
+		j ++;
+	}
+	return 1;
+}
+
 void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
 {
 
@@ -280,6 +295,7 @@ void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
 	char stringin[str_len];
 	int i=0;
 	uart_puts("> ");
+	int str_comp = 0;
 
 	while (true){
 		stringin[i] = uart_getc();
@@ -293,7 +309,13 @@ void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
 		else if (stringin[i] == '\r'){
 			uart_puts("\r\n");
 			stringin[i+1] = '\n';
-			uart_puts(stringin);
+			str_comp = compare_str(stringin, "calc");
+			if (str_comp){
+				uart_puts("CALC RECOGNIZED!\r\n");
+			}
+			else{
+				uart_puts(stringin);
+			}
 			reset_string(stringin, str_len);
 			uart_puts("> ");
 			i = 0;
