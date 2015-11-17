@@ -109,7 +109,7 @@ void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
 			stringin[i+1] = '\n';
 
 			str_comp = memcmp(stringin, "calc", sizeof(stringin));
-			if (str_comp){
+			if (str_comp == 0){
 				uart_puts("CALC RECOGNIZED!\r\n");
 				calc_init();
 			}
