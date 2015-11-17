@@ -4,11 +4,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "test.h"
-#include "tty.h"
+#include "led.h"
 #include "calc.h"
 
-#include "led.h"
 #include "tools.h"
 #include "strutil.h"
 #include "gpio.h"

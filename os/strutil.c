@@ -1,5 +1,3 @@
-#include <stdint.h>
-#include <stddef.h>
 #include "strutil.h"
 
 size_t strlen(const char* string)
