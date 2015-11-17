@@ -4,7 +4,7 @@ EFLAGS=-I. -O2 -Wall -Wextra
 #PREFIX?=$(PWD)
 #INCLUDEDIR?=$(PREFIX)/include
 
-DEPS=test.h led.h tools.h gpio.h
+DEPS=test.h led.h tools.h gpio.h calc.h
 
 %.o: %.c $(DEPS)
 	$(CC) $(CFLAGS) -c $< $(EFLAGS)

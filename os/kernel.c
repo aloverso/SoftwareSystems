@@ -49,8 +49,6 @@ int calc(void){
 void kernel_init(void){
 	uart_init();
 	uart_puts("Hello, in kernel_init\r\n");
-
-	//terminal_initialize();
 }
 
 void reset_string(char instr[], int array_size){
@@ -83,14 +81,6 @@ void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
 	(void) atags;
  
 	uart_init();
-	//uart_puts("Hello, in kernel_init\r\n");
-
-	// int x = get_n();
-	// x++;
-	// char str[15];
-	// char *s = itoa(x, str);
-	// uart_puts(s);
-	// x++;
 
 	/** GPIO Register set */
 	volatile unsigned int *gpio = led_init();
@@ -107,7 +97,7 @@ void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
 	(void) atags;
  
 	uart_init();
-	uart_puts("> Hello, kernel World!\r\n");
+	uart_puts("> Hello, World!\r\n");
 
 	int str_len = 80;
 	char stringin[str_len];
@@ -122,7 +112,7 @@ void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
 		if (i > str_len-1){
 			uart_puts(stringin);
 			reset_string(stringin, str_len);
-			uart_puts("Max string\r\n");
+			uart_puts("Max string len reached\r\n");
 			i = 0;
 		}
 		else if (stringin[i] == '\r'){
@@ -131,6 +121,7 @@ void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
 			str_comp = compare_str(stringin, "calc");
 			if (str_comp){
 				uart_puts("CALC RECOGNIZED!\r\n");
+				calc_init();
 			}
 			else{
 				uart_puts(stringin);
@@ -145,14 +136,5 @@ void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
 		}
 
 	}
-	// volatile unsigned int *gpio = (unsigned int*)GPIO_BASE;
-	// gpio[4] |= (1 << 21);
- 	
- // 	int x = get_n();
- // 	x++;
- // 	char str[15];
-	// char *s = itoa(x, str);
-	// uart_puts(s);
-	// x++;
 
 }
