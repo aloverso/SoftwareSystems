@@ -1,3 +1,8 @@
+export PREFIX="$HOME/opt/cross"
+export PATH="$PREFIX/bin:$PATH"
+
+make gpio.o
+make calc.o
 make tools.o
 make led.o
 make kernel.o
