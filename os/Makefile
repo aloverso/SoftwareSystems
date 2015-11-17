@@ -1,12 +1,10 @@
 CC=arm-none-eabi-gcc
 CFLAGS=-mcpu=arm1176jzf-s -fpic -ffreestanding -std=gnu99
 EFLAGS=-I. -O2 -Wall -Wextra
-<<<<<<< Updated upstream
-DEPS=test.h
 #PREFIX?=$(PWD)
 #INCLUDEDIR?=$(PREFIX)/include
 
-DEPS=test.h led.h tools.h
+DEPS=test.h led.h tools.h gpio.h
 
 %.o: %.c $(DEPS)
 	$(CC) $(CFLAGS) -c $< $(EFLAGS)

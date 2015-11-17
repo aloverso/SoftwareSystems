@@ -1,4 +1,9 @@
-#include "gpio.h"
+#if !defined(__cplusplus)
+#include <stdbool.h>
+#endif
+
+#include <stddef.h>
+#include <stdint.h>
 
 /** GPIO Register set */
 volatile unsigned int* gpio;
@@ -54,6 +59,9 @@ volatile unsigned int tim;
 #define GPIO_GPPUD      37
 #define GPIO_GPPUDCLK0  38
 #define GPIO_GPPUDCLK1  39
+
+size_t strlen(const char* str);
+
 
 static inline void mmio_write(uint32_t reg, uint32_t data);
  

@@ -1,3 +1,4 @@
+make gpio.o
 make tools.o
 make led.o
 make kernel.o
