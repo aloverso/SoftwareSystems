@@ -7,19 +7,13 @@
 #include "test.h"
 #include "led.h"
 #include "tools.h"
+#include "strutil.h"
 
 size_t terminal_row;
 size_t terminal_column;
 uint8_t terminal_color;
 uint16_t* terminal_buffer;
  
-size_t strlen(const char* str)
-{
-	size_t ret = 0;
-	while ( str[ret] != 0 )
-		ret++;
-	return ret;
-}
 
 static inline void mmio_write(uint32_t reg, uint32_t data)
 {
@@ -79,8 +73,8 @@ void uart_init()
 	//delay(150);
  
 	// Disable pull up/down for pin 14,15 & delay for 150 cycles.
-	mmio_write(GPPUDCLK0, (1 << 14) | (1 << 15));
-	delay(150);
+	//mmio_write(GPPUDCLK0, (1 << 14) | (1 << 15));
+	//delay(150);
  
 	// Write 0 to GPPUDCLK0 to make it take effect.
 	mmio_write(GPPUDCLK0, 0x00000000);
@@ -183,6 +177,14 @@ void reset_string(char instr[], int array_size){
 	}
 }
 
+void parse_input(char *cmd)
+{
+	if (memcmp(cmd, "calc", sizeof(cmd)) == 0)
+	{
+		uart_puts("CALCCCCCC\r\n");
+	}
+}
+
 void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
 {
 
@@ -201,7 +203,7 @@ void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
 	// x++;
 
 	/** GPIO Register set */
-	volatile unsigned int *gpio = led_init();
+	//volatile unsigned int *gpio = led_init();
 
 	/* Assign the address of the GPIO peripheral (Using ARM Physical Address) */
     //gpio = (unsigned int*)GPIO_BASE;
@@ -223,24 +225,38 @@ void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
 	uart_puts("> ");
 
 	while (true){
-		led_blink(gpio, .25);
-		stringin[i] = uart_getc();
+		//art_puts("hello");
+		//led_blink(gpio, .25);
+		char x = uart_getc();
 		//Checks if current str is being written outside size allotment
 		if (i > str_len-1){
 			uart_puts(stringin);
-			reset_string(stringin, str_len);
+			reset_string(stringin, i);
 			uart_puts("Max string\r\n");
 			i = 0;
 		}
-		else if (stringin[i] == '\r'){
+		else if (x == '\r'){
 			uart_puts("\r\n");
+			stringin[i] = '\r';
 			stringin[i+1] = '\n';
 			uart_puts(stringin);
-			reset_string(stringin, str_len);
+
+			//parse_input(stringin);
+
+			reset_string(stringin, i);
 			uart_puts("> ");
 			i = 0;
 		}
+		else if (x == 127 || x == 8) // backspace character
+		{
+			uart_putc('\b'); // move cursor back
+			uart_putc(' '); // insert space in terminal
+			uart_putc('\b'); // move cursor back before space
+			stringin[i-1] = 0x00; // replace last char with empty
+			i--; // decrement length
+		}
 		else{
+			stringin[i] = x;
 			uart_putc(stringin[i]);
 			i++;
 		}
