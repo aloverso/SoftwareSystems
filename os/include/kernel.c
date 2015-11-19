@@ -122,15 +122,23 @@ void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
 			i = 0;
 		}
 		else if (x == '\r'){
+			str_comp = memcmp(stringin, "calc", sizeof("calc"));
+
 			uart_puts("\r\n");
+<<<<<<< HEAD:os/include/kernel.c
 			str_comp = memcmp(stringin, "calc", sizeof(stringin));
 
 			if (str_comp == 0){
+=======
+
+			if (str_comp == 0) {
+>>>>>>> 4c4c9a61e643f1a70a5eb898914b87726cad548e:os/kernel.c
 				uart_puts("CALC RECOGNIZED!\r\n");
 				calc_init();
 			}
 			else{
 				uart_puts(stringin);
+				uart_puts("\r\n");
 			}
 			
 			reset_string(stringin, i);
