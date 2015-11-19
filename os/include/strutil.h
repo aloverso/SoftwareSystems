@@ -1,5 +1,12 @@
-#include <stdint.h>
+#ifndef STDDEF_H
+#define STDDEF_H
 #include <stddef.h>
+#endif
+
+#ifndef STDINT_H
+#define STDINT_H
+#include <stdint.h>
+#endif
 
 size_t strlen(const char*);
 void* memset(void*, int, size_t);

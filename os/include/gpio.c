@@ -1,6 +1,14 @@
 #include "gpio.h"
+
+#ifndef STRUTIL_H
+#define STRUTIL_H
 #include "strutil.h"
+#endif
+
+#ifndef TOOLS_H
+#define TOOLS_H
 #include "tools.h"
+#endif
 
 static inline void mmio_write(uint32_t reg, uint32_t data)
 {

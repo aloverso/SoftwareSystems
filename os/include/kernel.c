@@ -1,15 +1,35 @@
-#if !defined(__cplusplus)
+#ifndef STDBOOL_H
+#define STDBOOL_H
 #include <stdbool.h>
 #endif
+
+#ifndef STDDEF_H
+#define STDDEF_H
 #include <stddef.h>
+#endif
+
+#ifndef STDINT_H
+#define STDINT_H
 #include <stdint.h>
+#endif
+
+#ifndef GPIO_H
+#define GPIO_H
+#include "gpio.h"
+#endif
+
+#ifndef STRUTIL_H
+#define STRUTIL_H
+#include "strutil.h"
+#endif
+
+#ifndef TOOLS_H
+#define TOOLS_H
+#include "tools.h"
+#endif
 
 #include "led.h"
 #include "calc.h"
-
-#include "tools.h"
-#include "strutil.h"
-#include "gpio.h"
 
 int add(unsigned char a, unsigned char b)
 {
@@ -103,10 +123,8 @@ void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
 		}
 		else if (x == '\r'){
 			uart_puts("\r\n");
-			stringin[i] = '\r';
-			stringin[i+1] = '\n';
-
 			str_comp = memcmp(stringin, "calc", sizeof(stringin));
+
 			if (str_comp == 0){
 				uart_puts("CALC RECOGNIZED!\r\n");
 				calc_init();
@@ -114,7 +132,9 @@ void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
 			else{
 				uart_puts(stringin);
 			}
+			
 			reset_string(stringin, i);
+			uart_puts("\r\n");
 			uart_puts("> ");
 			i = 0;
 		}
