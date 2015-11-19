@@ -17,26 +17,6 @@ int add(unsigned char a, unsigned char b)
 	int j = b - '0';
 	return i+j;
 }
-
-char* itoa(int i, char b[]){
-    char const digit[] = "0123456789";
-    char* p = b;
-    if(i<0){
-        *p++ = '-';
-        i *= -1;
-    }
-    int shifter = i;
-    do{ //Move to where representation ends
-        ++p;
-        shifter = shifter/10;
-    }while(shifter);
-    *p = '\0';
-    do{ //Move back, inserting digits as u go
-        *--p = digit[i%10];
-        i = i/10;
-    }while(i);
-    return b;
-}
  
 #if defined(__cplusplus)
 extern "C" /* Use C linkage for kernel_main. */
@@ -59,7 +39,6 @@ void reset_string(char instr[], int array_size){
 
 void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
 {
-
 	(void) r0;
 	(void) r1;
 	(void) atags;
@@ -87,7 +66,8 @@ void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
 	char stringin[str_len];
 	int i=0;
 	uart_puts("> ");
-	int str_comp = 0;
+
+	int calc = 0;
 
 	while (true){
 		//art_puts("hello");
@@ -101,18 +81,26 @@ void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
 			uart_puts("Max string len reached\r\n");
 			i = 0;
 		}
-		else if (x == '\r'){
-			str_comp = memcmp(stringin, "calc", sizeof("calc"));
-
+		// if enter is pressed
+		else if (x == '\r')
+		{
 			uart_puts("\r\n");
+			if (calc)
+			{
 
-			if (str_comp == 0) {
+			}
+
+			if (memcmp(stringin, "calc", sizeof("calc")) == 0) {
 				uart_puts("CALC RECOGNIZED!\r\n");
 				calc_init();
+				calc = 1;
 			}
 			else{
 				uart_puts(stringin);
-				uart_puts("\r\n");
+				uart_puts("\r\n"); 
+				// char str[16];
+				// int c = -146;
+				// uart_puts(itos(c, str));
 			}
 			reset_string(stringin, i);
 			uart_puts("> ");
@@ -120,11 +108,14 @@ void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
 		}
 		else if (x == 127 || x == 8) // backspace character
 		{
-			uart_putc('\b'); // move cursor back
-			uart_putc(' '); // insert space in terminal
-			uart_putc('\b'); // move cursor back before space
-			stringin[i-1] = 0x00; // replace last char with empty
-			i--; // decrement length
+			if (i>0)
+			{
+				uart_putc('\b'); // move cursor back
+				uart_putc(' '); // insert space in terminal
+				uart_putc('\b'); // move cursor back before space
+				stringin[i-1] = 0x00; // replace last char with empty
+				i--; // decrement length
+			}
 		}
 		else{
 			stringin[i] = x;
