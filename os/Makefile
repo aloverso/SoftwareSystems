@@ -11,7 +11,7 @@ EFLAGS=$(INCLUDE) -O2 -Wall -Wextra
 _DEPS=test.h led.h tools.h gpio.h calc.h strutil.h
 DEPS=$(patsubst %, $(IDIR)/%,$(_DEPS))
 
-_OBJ = test.o led.o tools.o gpio.o calc.o strutil.o
+_OBJ = strutil.o gpio.o calc.o tools.o strutil.o kernel.o
 OBJ=$(patsubst %, $(ODIR)/%,$(_OBJ))
 
 PREFIX:=$(HOME)/opt/cross
@@ -32,7 +32,7 @@ all:
 $(ODIR)/boot.o: boot.S
 	$(CC) $(CFLAGS) -c $< -o $@
 
-myos.elf: $(ODIR)/*.o
+myos.elf: $(OBJ) $(ODIR)/boot.o
 	$(CC) -T linker.ld -o $@ -ffreestanding -O2 -nostdlib *.o -L~/opt/cross/lib/gcc/arm-none-eabi/4.8.4 -lgcc
 
 .PHONY: clean
