@@ -21,6 +21,11 @@ all:
 	# export $(PREFIX)
 	# export $(PATH)
 	$(ODIR)/boot.o
+	strutil
+	gpio
+	calc
+	tools
+	kernel
 	# $(ODIR)/*.o 
 	# myos.elf
 
@@ -33,7 +38,7 @@ $(ODIR)/boot.o: boot.S
 	$(CC) $(CFLAGS) -c $< -o $@
 
 myos.elf: $(OBJ) $(ODIR)/boot.o
-	$(CC) -T linker.ld -o $@ -ffreestanding -O2 -nostdlib *.o -L~/opt/cross/lib/gcc/arm-none-eabi/4.8.4 -lgcc
+	$(CC) -T linker.ld -o $@ -ffreestanding -O2 -nostdlib $(ODIR)/*.o -L~/opt/cross/lib/gcc/arm-none-eabi/4.8.4 -lgcc
 
 .PHONY: clean
 
