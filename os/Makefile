@@ -4,7 +4,8 @@ INCLUDE=-I./include
 IDIR=./include
 ODIR=./obj
 
-EFLAGS=$(INCLUDE) -O2 -Wall -Wextra
+EFLAGS=$(INCLUDE) -O2
+#EFLAGS=$(INCLUDE) -O2 -Wall -Wextra
 #PREFIX?=$(PWD)
 #INCLUDEDIR?=$(PREFIX)/include
 

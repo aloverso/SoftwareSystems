@@ -5,22 +5,26 @@ int do_math(unsigned char instr[], int array_size)
 {
 	int i = 0;
 	int j = 0;
-	int nums[10] = {0};
-	char l;
+	char nums[10];
+	int l;
 
-	while(i < array_size){
+	uart_puts("\r\n");
+	while(i < (array_size)){
 		l = instr[i];
 		if (l == 32){
+			uart_puts("space\r\n");
 			j ++;
 		}
-		else if (l > 48 && l < 57){
-			nums[j] += (l - '0');
+		else if ((l = '0') > 0 && (l - '0') < 9){
+			uart_putc(instr[i]);
+			nums[j] += instr[i];
 		}
 		else{
 			uart_puts("NaN\r\n");
 			return 0;
 		}
 		i ++;
+		uart_puts(nums[0]);
 	}
 	return 0;
 }
