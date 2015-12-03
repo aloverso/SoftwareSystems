@@ -30,20 +30,11 @@
 
 #include "led.h"
 #include "calc.h"
-
-int add(unsigned char a, unsigned char b)
-{
-	int i = a - '0';
-	int j = b - '0';
-	return i+j;
-}
  
 #if defined(__cplusplus)
 extern "C" /* Use C linkage for kernel_main. */
 #endif
-int calc(void){
-	return 1;
-}
+
 void kernel_init(void){
 	uart_init();
 	uart_puts("Hello, in kernel_init\r\n");
@@ -112,14 +103,13 @@ void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
 			}
 			else{
 				uart_puts(stringin);
-				uart_puts("\r\n"); 
+				uart_puts("\n");
 				// char str[16];
 				// int c = -146;
 				// uart_puts(itos(c, str));
 			}
 			
 			reset_string(stringin, i);
-			uart_puts("\r\n");
 			uart_puts("> ");
 			i = 0;
 		}

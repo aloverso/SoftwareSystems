@@ -20,12 +20,7 @@ PATH:=$(PREFIX)/bin:$(PATH)
 all: 
 	# export $(PREFIX)
 	# export $(PATH)
-	$(ODIR)/boot.o
-	strutil
-	gpio
-	calc
-	tools
-	kernel
+	#$(ODIR)/boot.o
 	# $(ODIR)/*.o 
 	# myos.elf
 
