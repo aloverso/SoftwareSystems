@@ -5,9 +5,11 @@ int do_math(unsigned char instr[], int array_size)
 {
 	int i = 0;
 	int j = 0;
+	int k = 0;
 	int nums[10];
 	int res = 0;
 	int l;
+	char cur_str[10];
 
 	uart_puts("\r\n");
 	uart_puts(instr);
@@ -15,10 +17,16 @@ int do_math(unsigned char instr[], int array_size)
 	while(i < array_size){
 		l = (int)instr[i];
 		if (l == 32){
+			uart_puts(cur_str);
+			nums[j] = cur_str - '0';
+			reset_string(cur_str, 10);
+			k = 0;
 			j ++;
 		}
 		else if (l > 48 & l < 57){
-			nums[j] += instr[i] - 48;
+			cur_str[k] += instr[i];
+			k ++;
+			//nums[j] += instr[i] - 48;
 		}
 		else if (l == 43){
 			nums[j] = 43;
@@ -30,20 +38,27 @@ int do_math(unsigned char instr[], int array_size)
 	}
 
 	i = 0;
+	int n1;
+	int n2;
 	while (i < j){
 		if (nums[i+1] == 43){
 			uart_puts("Adding ");
-			uart_putc((char)(nums[i]+48));
-			uart_puts(", ");
-			uart_putc((char)(nums[i+2]+48));
-			uart_puts("\r\n");
-			res = nums[i] + nums[i+2];
+			n1 = nums[i];
+			n2 = nums[i+2];
+
+			res = n1 + n2;
+			// uart_puts(res+'0');
+			// uart_putc((char)(nums[i]+48));
+			// uart_puts(", ");
+			// uart_putc((char)(nums[i+2]+48));
+			// uart_puts("\r\n");
+			// res = nums[i] + nums[i+2];
 		}
 		i += 3;
 	}
-	res += 48;
+	//res += 48;
 	uart_puts("Result is ");
-	uart_putc((char)res);
+	uart_puts(res + '0');
 	uart_puts("\r\n");
 
 	return 1;
