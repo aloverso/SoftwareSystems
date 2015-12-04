@@ -5,28 +5,48 @@ int do_math(unsigned char instr[], int array_size)
 {
 	int i = 0;
 	int j = 0;
-	char nums[10];
+	int nums[10];
+	int res = 0;
 	int l;
 
 	uart_puts("\r\n");
-	while(i < (array_size)){
-		l = instr[i];
+	uart_puts(instr);
+	uart_puts("\r\n");
+	while(i < array_size){
+		l = (int)instr[i];
 		if (l == 32){
-			uart_puts("space\r\n");
 			j ++;
 		}
-		else if ((l = '0') > 0 && (l - '0') < 9){
-			uart_putc(instr[i]);
-			nums[j] += instr[i];
+		else if (l > 48 & l < 57){
+			nums[j] = instr[i] - 48;
+		}
+		else if (l == 43){
+			nums[j] = 43;
 		}
 		else{
-			uart_puts("NaN\r\n");
 			return 0;
 		}
 		i ++;
-		uart_puts(nums[0]);
 	}
-	return 0;
+
+	i = 0;
+	while (i < j){
+		if (nums[i+1] == 43){
+			uart_puts("Adding ");
+			uart_putc((char)(nums[i]+48));
+			uart_puts(", ");
+			uart_putc((char)(nums[i+2]+48));
+			uart_puts("\r\n");
+			res = nums[i] + nums[i+2];
+		}
+		i += 3;
+	}
+	res += 48;
+	uart_puts("Result is ");
+	uart_putc((char)res);
+	uart_puts("\r\n");
+
+	return 1;
 }
 
 int calc_init(){
@@ -55,11 +75,10 @@ int calc_init(){
 			if (stringin[0] == 113){
 				calc_on = 0;
 				uart_puts("\r\n");
-				uart_puts(">>Exiting calculator.\r\n");
+				uart_puts(">>Exiting calculator. Goodbye!\r\n");
 				return 1;
 			}
 			res = do_math(stringin, i);
-			uart_puts(res);
 			reset_string(stringin, i);
 			uart_puts("> ");
 			i = 0;
