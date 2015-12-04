@@ -18,7 +18,7 @@ int do_math(unsigned char instr[], int array_size)
 			j ++;
 		}
 		else if (l > 48 & l < 57){
-			nums[j] = instr[i] - 48;
+			nums[j] += instr[i] - 48;
 		}
 		else if (l == 43){
 			nums[j] = 43;
