@@ -1,5 +1,9 @@
 #include "calc.h"
+
+#ifndef GPIO_H
+#define GPIO_H
 #include "gpio.h"
+#endif
 
 int do_math(unsigned char instr[], int array_size)
 {

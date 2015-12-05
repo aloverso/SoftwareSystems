@@ -1,4 +1,8 @@
 #include "tools.h"
+#ifndef GPIO_H
+#define GPIO_H
+#include "gpio.h"
+#endif
 
 volatile unsigned int* led_init();
 
@@ -7,7 +11,6 @@ void led_blink(volatile unsigned int *gpio, float freq);
 #define LED_GPFSEL      GPIO_GPFSEL4
 #define LED_GPFBIT      21
 #define LED_GPSET       GPIO_GPSET1
-#define GPIO_BASE       0x3F200000
 
 #define LED_GPFSEL      GPIO_GPFSEL4
 #define LED_GPFBIT      21
