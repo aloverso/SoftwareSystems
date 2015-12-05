@@ -1,14 +1,6 @@
 #include "gpio.h"
-
-#ifndef STRUTIL_H
-#define STRUTIL_H
 #include "strutil.h"
-#endif
-
-#ifndef TOOLS_H
-#define TOOLS_H
 #include "tools.h"
-#endif
 
 extern void PUT32 ( unsigned int, unsigned int );
 extern unsigned int GET32 ( unsigned int );

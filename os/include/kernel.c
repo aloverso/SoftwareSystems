@@ -31,10 +31,6 @@
 #include "led.h"
 #include "calc.h"
 
-extern void PUT32 ( unsigned int, unsigned int );
-extern unsigned int GET32 ( unsigned int );
-extern void dummy ( unsigned int );
- 
 #if defined(__cplusplus)
 extern "C" /* Use C linkage for kernel_main. */
 #endif
