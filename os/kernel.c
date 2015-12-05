@@ -1,44 +1,33 @@
-#ifndef STDBOOL_H
-#define STDBOOL_H
+#if !defined(__cplusplus)
 #include <stdbool.h>
 #endif
-
-#ifndef STDDEF_H
-#define STDDEF_H
 #include <stddef.h>
-#endif
-
-#ifndef STDINT_H
-#define STDINT_H
 #include <stdint.h>
-#endif
-
-#ifndef GPIO_H
-#define GPIO_H
-#include "gpio.h"
-#endif
-
-#ifndef STRUTIL_H
-#define STRUTIL_H
-#include "strutil.h"
-#endif
-
-#ifndef TOOLS_H
-#define TOOLS_H
-#include "tools.h"
-#endif
 
 #include "led.h"
 #include "calc.h"
 
+#include "tools.h"
+#include "strutil.h"
+#include "gpio.h"
+
 extern void PUT32 ( unsigned int, unsigned int );
 extern unsigned int GET32 ( unsigned int );
 extern void dummy ( unsigned int );
+
+int add(unsigned char a, unsigned char b)
+{
+	int i = a - '0';
+	int j = b - '0';
+	return i+j;
+}
  
 #if defined(__cplusplus)
 extern "C" /* Use C linkage for kernel_main. */
 #endif
-
+int calc(void){
+	return 1;
+}
 void kernel_init(void){
 	uart_init();
 	uart_puts("Hello, in kernel_init\r\n");
@@ -101,6 +90,10 @@ void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
 		else if (x == '\r')
 		{
 			uart_puts("\r\n");
+			if (*calc)
+			{
+				calc_parse(stringin, calc);
+			}
 
 			if (memcmp(stringin, "calc", sizeof("calc")) == 0) {
 				uart_puts("CALC RECOGNIZED!\r\n");
@@ -117,12 +110,11 @@ void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
 			}
 			else{
 				uart_puts(stringin);
-				uart_puts("\n");
+				uart_puts("\r\n"); 
 				// char str[16];
 				// int c = -146;
 				// uart_puts(itos(c, str));
 			}
-			
 			reset_string(stringin, i);
 			uart_puts("> ");
 			i = 0;

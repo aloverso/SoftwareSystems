@@ -1,3 +1,3 @@
-int calc_init();
+void calc_init();
 
-char* calc_parse(char *cmd);
+void calc_parse(char *cmd, int *calc_on);

@@ -153,7 +153,7 @@ int equal_hashable(Hashable *h1, Hashable *h2)
     if (h1->equal != h2->equal) return 0;
 
     /* use the equal method to compare keys */
-    return h1->equal(h1->key, h2->key);
+ c   return h1->equal(h1->key, h2->key);
 }
 
 

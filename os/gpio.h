@@ -1,17 +1,9 @@
-#ifndef STDBOOL_H
-#define STDBOOL_H
+#if !defined(__cplusplus)
 #include <stdbool.h>
 #endif
 
-#ifndef STDDEF_H
-#define STDDEF_H
 #include <stddef.h>
-#endif
-
-#ifndef STDINT_H
-#define STDINT_H
 #include <stdint.h>
-#endif
 
 /** GPIO Register set */
 volatile unsigned int* gpio;
