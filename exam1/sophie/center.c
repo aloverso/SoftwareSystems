@@ -8,7 +8,6 @@ License: Creative Commons Attribution-ShareAlike 3.0
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
 
 
 // Returns a heap-allocated string with length n, with
@@ -19,23 +18,22 @@ License: Creative Commons Attribution-ShareAlike 3.0
 
 char *center(char *s, int n, char fillchar)
 {
-	char res[n];
-	int i;
+	char *res = (char*)malloc((n+1)*sizeof(char));
     int s_len = strlen(s);  
-    int f_right = round((n - s_len)/2);
-    int f_left = n - s_len - f_right;
+    int f_left = (n - s_len)/2;
+
+    int i;
 
     for (i = 0; i < f_left; i++){
         res[i] = fillchar;
     }
-
     for (i = f_left; i < (f_left + s_len); i++){
         res[i] = s[i-f_left];
     }
     for (i = (f_left + s_len); i < n; i++){
         res[i] = fillchar;
     }
-
+    res[-1] = '\0';
     return res;
 }
 
