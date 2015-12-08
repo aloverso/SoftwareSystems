@@ -19,7 +19,7 @@ License: Creative Commons Attribution-ShareAlike 3.0
 char *center(char *s, int n, char fillchar)
 {
     int i;
-    int j;
+    int j=0;
     char *ret;
     ret = malloc(sizeof(char)*(n+1));
     int start = (n-strlen(s))/2; // floored
@@ -30,11 +30,13 @@ char *center(char *s, int n, char fillchar)
         ret[j] = fillchar;
         j++;
     }
+
     for (i=0; i<strlen(s); i++)
     {
         ret[j] = s[i];
         j++;
     }
+
     for (i=0; i<end; i++)
     {
         ret[j] = fillchar;
@@ -49,9 +51,6 @@ char *center(char *s, int n, char fillchar)
 
 int main (int argc, char *argv[])
 {
-    char *s0 = center("The", 29, ',');
-    printf("%s\n", s0);
-
     char *s = center("Software", 30, '.');
     printf("%s\n", s);
 
