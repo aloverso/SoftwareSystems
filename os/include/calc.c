@@ -5,64 +5,105 @@
 #include "gpio.h"
 #endif
 
+int convert_to_int (unsigned char instr[]){
+	int i = 0;
+	int res = 0;
+	while (instr[i] != '\0'){
+		res = res*10;
+		res += instr[i] - 48;
+		i++;
+	}
+	return res;
+}
+
+void convert_to_str(int int_in, unsigned char res[]){
+	int j = 0;
+	int cur_num = 0;
+	int k = 0;
+	char temp;
+	while (int_in > 0){
+		cur_num = int_in % 10;
+		int_in = int_in/10;
+		res[j] = cur_num + '0';
+		j++;
+	}
+	res[j+1] = '\0';
+	j--;
+	while (j > k){
+		temp = res[k];
+		res[k] = res[j];
+		res[j] = temp;
+		k++;
+		j--;
+	}
+
+}
+
 int do_math(unsigned char instr[], int array_size)
 {
 	int i = 0;
 	int j = 0;
 	int k = 0;
 	int nums[10];
-	int res = 0;
 	int l;
 	char cur_str[10];
+	char strtest[10];
 
-	uart_puts("\r\n");
-	uart_puts(instr);
-	uart_puts("\r\n");
 	while(i < array_size){
 		l = (int)instr[i];
-		if (l == 32){
-			uart_puts(cur_str);
-			nums[j] = cur_str - '0';
+		if (l == 42 |l == 43 |l == 45 |l == 47){
+			cur_str[k+1] = '\0';
+			nums[j] = convert_to_int(cur_str);
 			reset_string(cur_str, 10);
+			nums[j+1] = l;
 			k = 0;
-			j ++;
+			j += 2;
 		}
-		else if (l > 48 & l < 57){
-			cur_str[k] += instr[i];
+		else if (l > 47 & l < 58){
+			cur_str[k] = instr[i];
 			k ++;
-			//nums[j] += instr[i] - 48;
-		}
-		else if (l == 43){
-			nums[j] = 43;
 		}
 		else{
+			uart_puts("Not a number, please try again\r\n");
 			return 0;
 		}
 		i ++;
 	}
+	cur_str[k+1] = '\0';
+	nums[j] = convert_to_int(cur_str);
+	reset_string(cur_str, 10);
 
-	i = 0;
-	int n1;
-	int n2;
+	i = 1;
+	int res = nums[0];
+	uart_puts("\r\n");
 	while (i < j){
-		if (nums[i+1] == 43){
-			uart_puts("Adding ");
-			n1 = nums[i];
-			n2 = nums[i+2];
-
-			res = n1 + n2;
-			// uart_puts(res+'0');
-			// uart_putc((char)(nums[i]+48));
-			// uart_puts(", ");
-			// uart_putc((char)(nums[i+2]+48));
-			// uart_puts("\r\n");
-			// res = nums[i] + nums[i+2];
+		if(nums[i] == 42){
+			uart_puts("Multiply");
+			uart_puts("\r\n");
+			res *= nums[i+1];
 		}
-		i += 3;
+		else if (nums[i] == 43){
+			uart_puts("Adding");
+			uart_puts("\r\n");
+			res += nums[i+1];
+		}
+		else if (nums[i] == 45){
+			uart_puts("Subtract");
+			uart_puts("\r\n");
+			res -= nums[i+1];
+		}
+		else if (nums[i] == 47){
+			uart_puts("Divide");
+			uart_puts("\r\n");
+			res = res/nums[i+1];
+		}
+		i += 2;
 	}
-	//res += 48;
+
+	uart_puts("\r\n");
+	convert_to_str(res, strtest);
 	uart_puts("Result is ");
-	uart_puts(res + '0');
+	uart_puts(strtest);
 	uart_puts("\r\n");
 
 	return 1;
@@ -74,6 +115,8 @@ int calc_init(){
 	int i;
 	uart_puts(">>Welcome to the calculator application.\r\n");
 	uart_puts("> ");
+	//do_math1();
+	
 	
 	while(calc_on){
 		int str_len = 80;
@@ -97,7 +140,7 @@ int calc_init(){
 				uart_puts(">>Exiting calculator. Goodbye!\r\n");
 				return 1;
 			}
-			res = do_math(stringin, i);
+			do_math(stringin, i);
 			reset_string(stringin, i);
 			uart_puts("> ");
 			i = 0;
