@@ -5,6 +5,40 @@
 #include "gpio.h"
 #endif
 
+void convert_to_int (unsigned char instr[], int str_size, int res){
+	int i = 0;
+	int cur_num = 0;
+	res = 0;
+	while (i < str_size){
+		res *=10;
+		res += instr[i] - '0';
+		i++;
+	}
+}
+
+void convert_to_str(int int_in, unsigned char res[]){
+	int j = 0;
+	int cur_num = 0;
+	int k = 0;
+	char temp;
+	while (int_in > 0){
+		cur_num = int_in % 10;
+		int_in = int_in/10;
+		res[j] = cur_num + '0';
+		j++;
+	}
+	res[j+1] = '\0';
+	j--;
+	while (j > k){
+		temp = res[k];
+		res[k] = res[j];
+		res[j] = temp;
+		k++;
+		j--;
+	}
+
+}
+
 int do_math(unsigned char instr[], int array_size)
 {
 	int i = 0;
@@ -14,7 +48,10 @@ int do_math(unsigned char instr[], int array_size)
 	int res = 0;
 	int l;
 	char cur_str[10];
-
+	char strtest[10];
+	int test;
+	convert_to_int("1234", 4, test);
+	convert_to_str(test, strtest);
 	uart_puts("\r\n");
 	uart_puts(instr);
 	uart_puts("\r\n");
@@ -36,6 +73,7 @@ int do_math(unsigned char instr[], int array_size)
 			nums[j] = 43;
 		}
 		else{
+			uart_puts("Not a number, please try again\r\n");
 			return 0;
 		}
 		i ++;
@@ -62,7 +100,7 @@ int do_math(unsigned char instr[], int array_size)
 	}
 	//res += 48;
 	uart_puts("Result is ");
-	uart_puts(res + '0');
+	uart_puts(strtest);
 	uart_puts("\r\n");
 
 	return 1;
