@@ -112,15 +112,14 @@ int do_math(unsigned char instr[], int array_size)
 int calc_init(){
 	int res = 0;
 	int calc_on = 1;
-	int i;
+	int i=0;
 	uart_puts(">>Welcome to the calculator application.\r\n");
 	uart_puts("> ");
-	//do_math1();
-	
+	//do_math1()
+	int str_len = 80;
+	char stringin[str_len];
 	
 	while(calc_on){
-		int str_len = 80;
-		char stringin[str_len];
 
 		char x = uart_getc();
 		//Checks if current str is being written outside size allotment
