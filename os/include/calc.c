@@ -8,10 +8,18 @@
 int convert_to_int (unsigned char instr[]){
 	int i = 0;
 	int res = 0;
+	int negative = 0;
+	if(instr[i] == '-'){
+		negative = 1;
+		i++;
+	}
 	while (instr[i] != '\0'){
 		res = res*10;
 		res += instr[i] - 48;
 		i++;
+	}
+	if (negative){
+		res = res*-1;
 	}
 	return res;
 }
@@ -20,15 +28,22 @@ void convert_to_str(int int_in, unsigned char res[]){
 	int j = 0;
 	int cur_num = 0;
 	int k = 0;
+	int negative = 0;
 	char temp;
+	if (int_in < 0){
+		negative = 1;
+		int_in = int_in*-1;
+		j++;
+	}
+	else if (int_in == 0){
+		res[0] = '0';
+		return;
+	}
 	while (int_in > 0){
 		cur_num = int_in % 10;
 		int_in = int_in/10;
 		res[j] = cur_num + '0';
-		j++;
 	}
-	res[j+1] = '\0';
-	j--;
 	while (j > k){
 		temp = res[k];
 		res[k] = res[j];
@@ -36,7 +51,9 @@ void convert_to_str(int int_in, unsigned char res[]){
 		k++;
 		j--;
 	}
-
+	if (negative){
+		res[0] = '-';
+	}
 }
 
 int do_math(unsigned char instr[], int array_size)
@@ -105,7 +122,7 @@ int do_math(unsigned char instr[], int array_size)
 	uart_puts("Result is ");
 	uart_puts(strtest);
 	uart_puts("\r\n");
-
+	reset_string(strtest, 10);
 	return 1;
 }
 
