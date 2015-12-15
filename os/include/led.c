@@ -15,16 +15,13 @@ volatile unsigned int* led_init()
 // frequency is number of blinks per second
 void led_blink(volatile unsigned int *gpio, float freq)
 {
-    int32_t counts = 1000000 / freq;
-    freq++;
-    counts++;
     int i;
-    for(i=0;i<100000000;i++);
+    for(i=0;i<freq;i++) { dummy(i); };
     // turn led OFF
     gpio[LED_GPCLR] = (1 << LED_GPIO_BIT);
     
     i=0;
-    for(i=0;i<100000000;i++);
+    for(i=0;i<freq;i++) { dummy(i); };
 
     // turn led ON
     gpio[LED_GPSET] = (1 << LED_GPIO_BIT);
