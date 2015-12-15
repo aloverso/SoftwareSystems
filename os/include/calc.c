@@ -1,8 +1,6 @@
+#ifndef CALC_H
+#define CALC_H
 #include "calc.h"
-
-#ifndef GPIO_H
-#define GPIO_H
-#include "gpio.h"
 #endif
 
 int convert_to_int (unsigned char instr[]){

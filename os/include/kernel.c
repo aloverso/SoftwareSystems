@@ -28,8 +28,15 @@
 #include "tools.h"
 #endif
 
+#ifndef LED_H
+#define LED_H
 #include "led.h"
+#endif
+
+#ifndef CALC_H
+#define CALC_H
 #include "calc.h"
+#endif
 
 #if defined(__cplusplus)
 extern "C" /* Use C linkage for kernel_main. */
@@ -93,6 +100,7 @@ void parse_input (char *input)
 		}
 		else{
 			uart_puts(stringin);
+			do_math(stringin, index);
 			uart_puts("\r\n");
 		}
 	}
@@ -119,14 +127,6 @@ void parse_input (char *input)
 			// int c = -146;
 			// uart_puts(itos(c, str));
 		}
-	}
-}
-
-void reset_string(char instr[], int array_size){
-	int j = 0;
-	while (j < array_size){
-		instr[j] = 0x00;
-		j++;
 	}
 }
 
