@@ -1,27 +1,9 @@
-// To keep this in the first portion of the binary.
-.section ".text.boot"
- 
-// Make _start global.
+
+;@-------------------------------------------------------------------------
+;@-------------------------------------------------------------------------
+
 .globl _start
- 
-// Entry point for the kernel.
-// r15 -> should begin execution at 0x8000.
-// r0 -> 0x00000000
-// r1 -> 0x00000C42
-// r2 -> 0x00000100 - start of ATAGS
-// preserve these registers as argument for kernel_main
 _start:
-	// Setup the stack.
-	mov sp, #0x8000
- 
-	// Clear out bss.
-	ldr r4, =__bss_start
-	ldr r9, =__bss_end
-	mov r5, #0
-	mov r6, #0
-	mov r7, #0
-	mov r8, #0
-	b       2f
     ldr pc,reset_handler
     ldr pc,undefined_handler
     ldr pc,swi_handler
@@ -38,6 +20,7 @@ data_handler:       .word hang
 unused_handler:     .word hang
 irq_handler:        .word irq
 fiq_handler:        .word hang
+
 reset:
     mov r0,#0x8000
     mov r1,#0x0000
@@ -68,24 +51,6 @@ reset:
 
     bl kernel_main
 hang: b hang
-1:
-	// store multiple at r4.
-	stmia r4!, {r5-r8}
- 
-	// If we are still below bss_end, loop.
-2:
-	cmp r4, r9
-	blo 1b
- 
-	// Call kernel_main
-	ldr r3, =kernel_main
-	//ldr r3,=kernel_init
-	blx r3
- 
-	// halt
-halt:
-	wfe
-	b halt
 
 .globl PUT32
 PUT32:
@@ -113,3 +78,19 @@ irq:
     bl c_irq_handler
     pop  {r0,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12,lr}
     subs pc,lr,#4
+
+;@-------------------------------------------------------------------------
+;@-------------------------------------------------------------------------
+
+;@-------------------------------------------------------------------------
+;@
+;@ Copyright (c) 2012 David Welch dwelch@dwelch.com
+;@
+;@ Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+;@
+;@ The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+;@
+;@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+;@
+;@-------------------------------------------------------------------------
+

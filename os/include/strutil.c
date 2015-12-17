@@ -8,6 +8,14 @@ size_t strlen(const char* string)
 	return result;
 }
 
+void reset_string(char instr[], int array_size){
+	int j = 0;
+	while (j < array_size){
+		instr[j] = 0x00;
+		j++;
+	}
+}
+
 void* memset(void* bufptr, int value, size_t size)
 {
 	unsigned char* buf = (unsigned char*) bufptr;

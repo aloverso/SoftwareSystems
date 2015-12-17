@@ -28,31 +28,19 @@
 #include "tools.h"
 #endif
 
+#ifndef LED_H
+#define LED_H
 #include "led.h"
+#endif
+
+#ifndef CALC_H
+#define CALC_H
 #include "calc.h"
+#endif
 
 #if defined(__cplusplus)
 extern "C" /* Use C linkage for kernel_main. */
 #endif
-
-#define GPFSEL1 0x3F200004
-#define GPSET0  0x3F20001C
-#define GPCLR0  0x3F200028
-#define GPPUD       0x3F200094
-#define GPPUDCLK0   0x3F200098
-
-#define AUX_ENABLES     0x3F215004
-#define AUX_MU_IO_REG   0x3F215040
-#define AUX_MU_IER_REG  0x3F215044
-#define AUX_MU_IIR_REG  0x3F215048
-#define AUX_MU_LCR_REG  0x3F21504C
-#define AUX_MU_MCR_REG  0x3F215050
-#define AUX_MU_LSR_REG  0x3F215054
-#define AUX_MU_MSR_REG  0x3F215058
-#define AUX_MU_SCRATCH  0x3F21505C
-#define AUX_MU_CNTL_REG 0x3F215060
-#define AUX_MU_STAT_REG 0x3F215064
-#define AUX_MU_BAUD_REG 0x3F215068
 
 #define IRQ_BASIC 0x3F00B200
 #define IRQ_PEND1 0x3F00B204
@@ -70,29 +58,119 @@ volatile unsigned int rxtail;
 #define RXBUFMASK 0xFFF
 volatile unsigned char rxbuffer[RXBUFMASK+1];
 
-extern void enable_irq ( void );
-void hexstrings ( unsigned int d )
-{
-    //unsigned int ra;
-    unsigned int rb;
-    unsigned int rc;
+volatile unsigned int freq; // keep track of counts for led
+#define counts 550000 // approx one second frequency
 
-    rb=32;
-    while(1)
-    {
-        rb-=4;
-        rc=(d>>rb)&0xF;
-        if(rc>9) rc+=0x37; else rc+=0x30;
-        uart_putc(rc);
-        if(rb==0) break;
-    }
-    uart_putc(0x20);
-}
-void hexstring ( unsigned int d )
+#define str_len 80
+char stringin[str_len];
+volatile unsigned int index;
+
+volatile unsigned int CALC_ON; // if in calculator program
+
+extern void enable_irq ( void );
+extern void enable_fiq ( void );
+
+void help_menu ()
 {
-    hexstrings(d);
-    uart_putc(0x0D);
-    uart_putc(0x0A);
+	uart_puts ("help - show this help menu\r\n");
+	uart_puts ("calc - start calculator program\r\n");
+	uart_puts ("stop - if in calculator, quit program\r\n");
+	uart_puts ("blink x - blink led at x hertz; x is 2 chars max\r\n");
+}
+
+void parse_input ()
+{
+	if (memcmp(stringin, "help", sizeof("help")) == 0) 
+	{
+		help_menu ();
+	}
+	else if (CALC_ON)
+	{
+		if (memcmp(stringin, "stop", sizeof("stop")) == 0) {
+			uart_puts("Quit Calculator\r\n");
+			CALC_ON = 0;
+		}
+		else{
+			do_math(stringin, index);
+		}
+	}
+	else
+	{
+		char firstfive[6];
+		int a;
+		for (a=0; a<5; a++)
+		{
+			firstfive[a] = stringin[a];
+		}
+		firstfive[5] = '\0';
+
+		if (memcmp(stringin, "calc", sizeof("calc")) == 0) {
+			uart_puts("Start Calculator Program!\r\n");
+			CALC_ON = 1;
+		}
+
+		else if (memcmp(firstfive, "blink", sizeof("blink")) == 0) {
+			char requested_freq[2]; // no 100+ hz frequencies
+			reset_string(requested_freq, 2);
+			int b;
+			int is_decimal = 0;
+			for (b=0; b<2; b++)
+			{
+				char digit = stringin[6+b];
+				if (digit >= 48 && digit <= 57) // is a number
+				{
+					requested_freq[b] = digit;
+				}
+				else if (digit == 0) 
+				{
+					requested_freq[b] = '\0';
+				}
+				else if (b==0 && digit == 46) // is a decimal point
+				{
+					is_decimal = 1;
+				}
+				else
+				{
+					uart_puts("Not valid frequency\r\n");
+					return;
+				}
+			}
+			uart_puts ("Blinking LED at ");
+			if (is_decimal)
+			{ 
+				uart_puts (".");
+				uart_putc (requested_freq[1]);
+			}
+			else { uart_puts (requested_freq); }
+			uart_puts(" Hertz\r\n");
+			float freq_int;
+			if (is_decimal)
+			{
+				// first is decimal, only convert second num
+				char single_digit[1];
+				single_digit[0] = requested_freq[1];
+				freq_int = (float) convert_to_int(single_digit);
+				freq_int = freq_int / 10.0; // account for decimal
+			}
+			else
+			{
+				freq_int = (float) convert_to_int(requested_freq);
+			}
+			if (freq_int == 0)
+			{
+				freq = (float) 1000000000; // basically infinity
+			}
+			else
+			{
+				freq = counts / freq_int;
+			}
+		}
+
+		else {
+			uart_puts(stringin);
+			uart_puts("\r\n");
+		}
+	}
 }
 
 void c_irq_handler ( void )
@@ -110,137 +188,84 @@ void c_irq_handler ( void )
             rc=GET32(AUX_MU_IO_REG); //read byte from rx fifo
             rxbuffer[rxhead]=rc&0xFF;
             rxhead=(rxhead+1)&RXBUFMASK;
-            uart_putc(rxbuffer[rxtail]);
+            char x = rxbuffer[rxtail];
+
+            if (x != 0)
+            {
+            	if (index > str_len - 1)
+            	{
+            		uart_puts(stringin);
+					reset_string(stringin, index);
+				
+					uart_puts("Max string len reached\r\n");
+					index = 0;
+            	}
+            	// if enter is pressed
+				else if (x == '\r')
+				{
+					uart_puts("\r\n");
+					parse_input();
+
+					reset_string(stringin, index);
+					uart_puts("> ");
+					index = 0;
+				}
+				else if (x == 127 || x == 8) // backspace character
+				{
+					if (index>0)
+					{
+						uart_putc('\b'); // move cursor back
+						uart_putc(' '); // insert space in terminal
+						uart_putc('\b'); // move cursor back before space
+						stringin[index-1] = 0x00; // replace last char with empty
+						index--; // decrement length
+					}
+				}
+				else
+				{
+					stringin[index] = x;
+					uart_putc(stringin[index]);
+					index++;
+				}
+			}
+
             rxtail=(rxtail+1)&RXBUFMASK;
         }
     }
-
 }
 
-void kernel_init(void){
-	uart_init();
-	uart_puts("Hello, in kernel_init\r\n");
-}
-
-void reset_string(char instr[], int array_size){
-	int j = 0;
-	while (j < array_size){
-		instr[j] = 0x00;
-		j++;
-	}
-}
-
-void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
+int kernel_main(unsigned int earlypc)
 {
-	// (void) r0;
-	// (void) r1;
-	// (void) atags;
- 
 	PUT32(IRQ_DISABLE1,1<<29);
 
     uart_init();
-
-    hexstring(0x12345678);
-
 
     PUT32(IRQ_ENABLE1,1<<29);
  
     enable_irq();
 
+	uart_puts("> Hello, World!\r\n");
+	uart_puts("> ");
+
+    volatile unsigned int *gpio = led_init();
+
+    index = 0;
+    CALC_ON = 0;
+    reset_string(stringin, 80);
+    freq = counts;
+
     while(1)
     {
-        // while(rxtail!=rxhead)
-        // {
-        //     uart_putc(rxbuffer[rxtail]);
-        //     rxtail=(rxtail+1)&RXBUFMASK;
-        //     rx++;
-        // }
+    	int i;
+	    for(i=0;i<freq;i++) { dummy(i); };
+	    // turn led OFF
+	    gpio[LED_GPCLR] = (1 << LED_GPIO_BIT);
+	    
+	    i=0;
+	    for(i=0;i<freq;i++) { dummy(i); };
+
+	    // turn led ON
+	    gpio[LED_GPSET] = (1 << LED_GPIO_BIT);
     }
-
-	// /** GPIO Register set */
-	// volatile unsigned int *gpio = led_init();
-
-	// /* Assign the address of the GPIO peripheral (Using ARM Physical Address) */
- //    //gpio = (unsigned int*)GPIO_BASE;
-
- //    /* Write 1 to the GPIO16 init nibble in the Function Select 1 GPIO
- //       peripheral register to enable GPIO16 as an output */
- //    //gpio[LED_GPFSEL] |= (1 << LED_GPFBIT);
-
-	// (void) r0;
-	// (void) r1;
-	// (void) atags;
- 
-	// uart_init();
-	// uart_puts("> Hello, World!\r\n");
-
-	// int str_len = 80;
-	// char stringin[str_len];
-	// int i=0;
-	// uart_puts("> ");
-
-	// int x = 0;
-	// int *calc = &x;
-
-	// while (true){
-	// 	//art_puts("hello");
-	// 	//led_blink(gpio, .25);
-	// 	char x = uart_getc();
-	// 	//Checks if current str is being written outside size allotment
-	// 	if (i > str_len-1){
-	// 		uart_puts(stringin);
-	// 		reset_string(stringin, i);
-		
-	// 		uart_puts("Max string len reached\r\n");
-	// 		i = 0;
-	// 	}
-	// 	// if enter is pressed
-	// 	else if (x == '\r')
-	// 	{
-	// 		uart_puts("\r\n");
-
-	// 		if (memcmp(stringin, "calc", sizeof("calc")) == 0) {
-	// 			uart_puts("CALC RECOGNIZED!\r\n");
-	// 			calc_init();
-	// 			*calc = 1;
-	// 		}
-	// 		if (memcmp(stringin, "blink", sizeof("blink")) == 0) {
-	// 			uart_puts("LEDDDDDD!\r\n");
-	// 			led_blink(gpio, 1);
-	// 		}
-	// 		if (memcmp(stringin, "stop", sizeof("stop")) == 0) {
-	// 			uart_puts("LEDDDDDD STOP!\r\n");
-	// 			led_blink(gpio, 0);
-	// 		}
-	// 		else{
-	// 			uart_puts(stringin);
-	// 			uart_puts("\n");
-	// 			// char str[16];
-	// 			// int c = -146;
-	// 			// uart_puts(itos(c, str));
-	// 		}
-			
-	// 		reset_string(stringin, i);
-	// 		uart_puts("> ");
-	// 		i = 0;
-	// 	}
-	// 	else if (x == 127 || x == 8) // backspace character
-	// 	{
-	// 		if (i>0)
-	// 		{
-	// 			uart_putc('\b'); // move cursor back
-	// 			uart_putc(' '); // insert space in terminal
-	// 			uart_putc('\b'); // move cursor back before space
-	// 			stringin[i-1] = 0x00; // replace last char with empty
-	// 			i--; // decrement length
-	// 		}
-	// 	}
-	// 	else{
-	// 		stringin[i] = x;
-	// 		uart_putc(stringin[i]);
-	// 		i++;
-	// 	}
-
-	// }
-
+    return(0);
 }
