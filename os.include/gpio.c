@@ -2,6 +2,10 @@
 #include "strutil.h"
 #include "tools.h"
 
+extern void PUT32 ( unsigned int, unsigned int );
+extern unsigned int GET32 ( unsigned int );
+extern void dummy ( unsigned int );
+
 #if BAREMETAL
     void uart_init()
     {
@@ -12,7 +16,7 @@
         PUT32(AUX_MU_CNTL_REG,0);
         PUT32(AUX_MU_LCR_REG,3);
         PUT32(AUX_MU_MCR_REG,0);
-        PUT32(AUX_MU_IER_REG,0x5);
+        PUT32(AUX_MU_IER_REG,0);
         PUT32(AUX_MU_IIR_REG,0xC6);
         PUT32(AUX_MU_BAUD_REG,270);
 

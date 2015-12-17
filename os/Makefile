@@ -12,7 +12,7 @@ EFLAGS=$(INCLUDE) -O2
 _DEPS=test.h led.h tools.h gpio.h calc.h strutil.h
 DEPS=$(patsubst %, $(IDIR)/%,$(_DEPS))
 
-_OBJ = strutil.o gpio.o calc.o tools.o strutil.o kernel.o
+_OBJ = strutil.o gpio.o calc.o tools.o led.o kernel.o
 OBJ=$(patsubst %, $(ODIR)/%,$(_OBJ))
 
 PREFIX:=$(HOME)/opt/cross

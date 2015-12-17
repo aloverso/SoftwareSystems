@@ -11,7 +11,7 @@ volatile unsigned int* gpio;
 /** Simple loop variable */
 volatile unsigned int tim;
 
-#define BAREMETAL 1
+#define BAREMETAL 0
 
 extern void PUT32 ( unsigned int, unsigned int );
 extern unsigned int GET32 ( unsigned int );
