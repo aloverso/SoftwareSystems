@@ -11,6 +11,9 @@ volatile unsigned int* gpio;
 /** Simple loop variable */
 volatile unsigned int tim;
 
+// CHANGE THIS VARIABLE IF NECESSARY
+// 1 is for running on baremetal Pi 2B
+// 0 is for QEMU
 #define BAREMETAL 1
 
 extern void PUT32 ( unsigned int, unsigned int );

@@ -42,6 +42,7 @@
 extern "C" /* Use C linkage for kernel_main. */
 #endif
 
+// define the register addresses for interrupts
 #define IRQ_BASIC 0x3F00B200
 #define IRQ_PEND1 0x3F00B204
 #define IRQ_PEND2 0x3F00B208
@@ -53,23 +54,28 @@ extern "C" /* Use C linkage for kernel_main. */
 #define IRQ_DISABLE2 0x3F00B220
 #define IRQ_DISABLE_BASIC 0x3F00B224
 
+// these variables keep track of the buffer state for interrupts
 volatile unsigned int rxhead;
 volatile unsigned int rxtail;
 #define RXBUFMASK 0xFFF
 volatile unsigned char rxbuffer[RXBUFMASK+1];
 
+// for the led
 volatile unsigned int freq; // keep track of counts for led
 #define counts 550000 // approx one second frequency
 
+// for the uart command line parsing
 #define str_len 80
 char stringin[str_len];
 volatile unsigned int index;
 
 volatile unsigned int CALC_ON; // if in calculator program
 
+// declarations to enable the interrupts - defined in assembly
 extern void enable_irq ( void );
 extern void enable_fiq ( void );
 
+// this function will print a help menu to tell what commands it will recognize
 void help_menu ()
 {
 	uart_puts ("help - show this help menu\r\n");
@@ -78,12 +84,18 @@ void help_menu ()
 	uart_puts ("blink x - blink led at x hertz; x is 2 chars max\r\n");
 }
 
+// the function is called if enter is pressed
+// it will parse the input in the global stringin variable
+// then do all necessary actions
 void parse_input ()
 {
+	// if help, display help menu
 	if (memcmp(stringin, "help", sizeof("help")) == 0) 
 	{
 		help_menu ();
 	}
+
+	// if calc is on, all we can do is run calculator or stop
 	else if (CALC_ON)
 	{
 		if (memcmp(stringin, "stop", sizeof("stop")) == 0) {
@@ -94,8 +106,12 @@ void parse_input ()
 			do_math(stringin, index);
 		}
 	}
+
+	// if not in calc, can do other commands
 	else
 	{
+		// this gets the first 5 characters of the input
+		// in order to test if they match "blink"
 		char firstfive[6];
 		int a;
 		for (a=0; a<5; a++)
@@ -114,6 +130,8 @@ void parse_input ()
 			reset_string(requested_freq, 2);
 			int b;
 			int is_decimal = 0;
+
+			// gets the two characters after the space, for frequency
 			for (b=0; b<2; b++)
 			{
 				char digit = stringin[6+b];
@@ -162,10 +180,12 @@ void parse_input ()
 			}
 			else
 			{
+				// update led frequency
 				freq = counts / freq_int;
 			}
 		}
 
+		// if not recognized, just echo command
 		else {
 			uart_puts(stringin);
 			uart_puts("\r\n");
@@ -173,6 +193,8 @@ void parse_input ()
 	}
 }
 
+// this is the interrupt handler function
+// gets called by the interrupt in assembly
 void c_irq_handler ( void )
 {
     unsigned int rb,rc;
@@ -190,8 +212,10 @@ void c_irq_handler ( void )
             rxhead=(rxhead+1)&RXBUFMASK;
             char x = rxbuffer[rxtail];
 
+            // only do stuff if it's a valid character
             if (x != 0)
             {
+            	// if string array too long, reset
             	if (index > str_len - 1)
             	{
             		uart_puts(stringin);
@@ -221,6 +245,7 @@ void c_irq_handler ( void )
 						index--; // decrement length
 					}
 				}
+				// if nothing else, just add character
 				else
 				{
 					stringin[index] = x;
@@ -228,14 +253,16 @@ void c_irq_handler ( void )
 					index++;
 				}
 			}
-
+			// keep track of which interrupt we processed
             rxtail=(rxtail+1)&RXBUFMASK;
         }
     }
 }
 
+// THE MAIN!
 int kernel_main(unsigned int earlypc)
 {
+	// this initializes interrupts and uart
 	PUT32(IRQ_DISABLE1,1<<29);
 
     uart_init();
@@ -244,18 +271,23 @@ int kernel_main(unsigned int earlypc)
  
     enable_irq();
 
+    // start off the CLI
 	uart_puts("> Hello, World!\r\n");
 	uart_puts("> ");
 
     volatile unsigned int *gpio = led_init();
 
+    // initialize
     index = 0;
     CALC_ON = 0;
     reset_string(stringin, 80);
     freq = counts;
 
+    // main loop
+    // gets interrupted by uart
     while(1)
     {
+    	// just blinks led at the given frequency
     	int i;
 	    for(i=0;i<freq;i++) { dummy(i); };
 	    // turn led OFF

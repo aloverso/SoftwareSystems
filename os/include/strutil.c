@@ -1,5 +1,6 @@
 #include "strutil.h"
 
+// return length of string
 size_t strlen(const char* string)
 {
 	size_t result = 0;
@@ -8,6 +9,7 @@ size_t strlen(const char* string)
 	return result;
 }
 
+// set string to all null values
 void reset_string(char instr[], int array_size){
 	int j = 0;
 	while (j < array_size){
@@ -46,6 +48,7 @@ void* memcpy(void* restrict dstptr, const void* restrict srcptr, size_t size)
 	return dstptr;
 }
 
+// compare two strings (or any pointers) to equality
 int memcmp(const void* aptr, const void* bptr, size_t size)
 {
 	const unsigned char* a = (const unsigned char*) aptr;
