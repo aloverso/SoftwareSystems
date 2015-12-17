@@ -58,44 +58,24 @@ volatile unsigned int rxtail;
 #define RXBUFMASK 0xFFF
 volatile unsigned char rxbuffer[RXBUFMASK+1];
 
+volatile unsigned int freq; // keep track of counts for led
+#define counts 550000 // approx one second frequency
+
 #define str_len 80
 char stringin[str_len];
-//stringin[79] = '\0';
 volatile unsigned int index;
 
-volatile unsigned int CALC_ON;
+volatile unsigned int CALC_ON; // if in calculator program
 
 extern void enable_irq ( void );
 extern void enable_fiq ( void );
 
-char* itoa(int i, char b[]){
-    char const digit[] = "0123456789";
-    char* p = b;
-    if(i<0){
-        *p++ = '-';
-        i *= -1;
-    }
-    int shifter = i;
-    do{ //Move to where representation ends
-        ++p;
-        shifter = shifter/10;
-    }while(shifter);
-    *p = '\0';
-    do{ //Move back, inserting digits as u go
-        *--p = digit[i%10];
-        i = i/10;
-    }while(i);
-    return b;
-}
-
-void parse_input (char *input)
+void parse_input ()
 {
-	//uart_puts(stringin);
-	//uart_puts("\r\n");
 	if (CALC_ON)
 	{
-		if (memcmp(input, "stop", sizeof("stop")) == 0) {
-			uart_puts("CALC STOP!\r\n");
+		if (memcmp(stringin, "stop", sizeof("stop")) == 0) {
+			uart_puts("Quit Calculator\r\n");
 			CALC_ON = 0;
 		}
 		else{
@@ -106,26 +86,79 @@ void parse_input (char *input)
 	}
 	else
 	{
-		if (memcmp(input, "calc", sizeof("calc")) == 0) {
-			uart_puts("CALC RECOGNIZED!\r\n");
+		if (memcmp(stringin, "calc", sizeof("calc")) == 0) {
+			uart_puts("Start Calculator Program!\r\n");
 			CALC_ON = 1;
-			//calc_init();
-			//*calc = 1;
 		}
-		if (memcmp(input, "blink", sizeof("blink")) == 0) {
-			uart_puts("LEDDDDDD!\r\n");
-			//led_blink(gpio, 1);
+
+		char firstfive[6];
+		int a;
+		for (a=0; a<5; a++)
+		{
+			firstfive[a] = stringin[a];
 		}
-		if (memcmp(input, "stop", sizeof("stop")) == 0) {
-			uart_puts("LEDDDDDD STOP!\r\n");
-			//led_blink(gpio, 0);
+		firstfive[5] = '\0';
+
+		if (memcmp(firstfive, "blink", sizeof("blink")) == 0) {
+			char requested_freq[2]; // no 100+ hz frequencies
+			reset_string(requested_freq, 2);
+			int b;
+			int is_decimal = 0;
+			for (b=0; b<2; b++)
+			{
+				char digit = stringin[6+b];
+				if (digit >= 48 && digit <= 57) // is a number
+				{
+					requested_freq[b] = digit;
+				}
+				else if (digit == 0) 
+				{
+					requested_freq[b] = '\0';
+				}
+				else if (b==0 && digit == 46) // is a decimal point
+				{
+					is_decimal = 1;
+				}
+				else
+				{
+					uart_puts("Not valid frequency\r\n");
+					return;
+				}
+			}
+			uart_puts ("Blinking LED at ");
+			if (is_decimal)
+			{ 
+				uart_puts (".");
+				uart_putc (requested_freq[1]);
+			}
+			else { uart_puts (requested_freq); }
+			uart_puts(" Hertz\r\n");
+			float freq_int;
+			if (is_decimal)
+			{
+				// first is decimal, only convert second num
+				char single_digit[1];
+				single_digit[0] = requested_freq[1];
+				freq_int = (float) convert_to_int(single_digit);
+				freq_int = freq_int / 10.0; // account for decimal
+			}
+			else
+			{
+				freq_int = (float) convert_to_int(requested_freq);
+			}
+			if (freq_int == 0)
+			{
+				freq = (float) 1000000000; // basically infinity
+			}
+			else
+			{
+				freq = counts / freq_int;
+			}
 		}
+
 		else{
 			uart_puts(stringin);
 			uart_puts("\r\n");
-			// char str[16];
-			// int c = -146;
-			// uart_puts(itos(c, str));
 		}
 	}
 }
@@ -146,11 +179,9 @@ void c_irq_handler ( void )
             rxbuffer[rxhead]=rc&0xFF;
             rxhead=(rxhead+1)&RXBUFMASK;
             char x = rxbuffer[rxtail];
-            //uart_putc(x);
 
             if (x != 0)
             {
-
             	if (index > str_len - 1)
             	{
             		uart_puts(stringin);
@@ -163,54 +194,38 @@ void c_irq_handler ( void )
 				else if (x == '\r')
 				{
 					uart_puts("\r\n");
-					parse_input(stringin);
+					parse_input();
 
 					reset_string(stringin, index);
 					uart_puts("> ");
 					index = 0;
 				}
-				else{
+				else if (x == 127 || x == 8) // backspace character
+				{
+					if (index>0)
+					{
+						uart_putc('\b'); // move cursor back
+						uart_putc(' '); // insert space in terminal
+						uart_putc('\b'); // move cursor back before space
+						stringin[index-1] = 0x00; // replace last char with empty
+						index--; // decrement length
+					}
+				}
+				else
+				{
 					stringin[index] = x;
 					uart_putc(stringin[index]);
 					index++;
 				}
-
-	   //          stringin[index] = x;
-				// // if (x == 0) {
-				// // 	uart_puts("x is null");
-				// // }
-				// //stringin[0] = x;
-				// if (stringin[0] == 0) {
-				// 	uart_puts("stringin[0] is null");
-				// }
-				// uart_puts(stringin);
-				// uart_puts("\r\n");
-				// index++;
-
-				// char str[16];
-				
-				// //uart_puts(itoa(index, str));
 			}
 
             rxtail=(rxtail+1)&RXBUFMASK;
         }
     }
-
 }
-
-void kernel_init(void){
-	uart_init();
-	uart_puts("Hello, in kernel_init\r\n");
-}
-
-
 
 int kernel_main(unsigned int earlypc)
 {
-	// (void) r0;
-	// (void) r1;
-	// (void) atags;
-
 	PUT32(IRQ_DISABLE1,1<<29);
 
     uart_init();
@@ -224,11 +239,10 @@ int kernel_main(unsigned int earlypc)
 
     volatile unsigned int *gpio = led_init();
 
-    int freq = 200000;
     index = 0;
     CALC_ON = 0;
     reset_string(stringin, 80);
-
+    freq = counts;
 
     while(1)
     {
@@ -244,90 +258,4 @@ int kernel_main(unsigned int earlypc)
 	    gpio[LED_GPSET] = (1 << LED_GPIO_BIT);
     }
     return(0);
-
-	// /** GPIO Register set */
-
-	// /* Assign the address of the GPIO peripheral (Using ARM Physical Address) */
- //    //gpio = (unsigned int*)GPIO_BASE;
-
- //    /* Write 1 to the GPIO16 init nibble in the Function Select 1 GPIO
- //       peripheral register to enable GPIO16 as an output */
- //    //gpio[LED_GPFSEL] |= (1 << LED_GPFBIT);
-
-	// (void) r0;
-	// (void) r1;
-	// (void) atags;
- 
-	// uart_init();
-	// uart_puts("> Hello, World!\r\n");
-
-	// int str_len = 80;
-	// char stringin[str_len];
-	// int i=0;
-	// uart_puts("> ");
-
-	// int x = 0;
-	// int *calc = &x;
-
-	// while (true){
-	// 	//art_puts("hello");
-	// 	//led_blink(gpio, .25);
-	// 	char x = uart_getc();
-	// 	//Checks if current str is being written outside size allotment
-	// 	if (i > str_len-1){
-	// 		uart_puts(stringin);
-	// 		reset_string(stringin, i);
-		
-	// 		uart_puts("Max string len reached\r\n");
-	// 		i = 0;
-	// 	}
-	// 	// if enter is pressed
-	// 	else if (x == '\r')
-	// 	{
-	// 		uart_puts("\r\n");
-
-	// 		if (memcmp(stringin, "calc", sizeof("calc")) == 0) {
-	// 			uart_puts("CALC RECOGNIZED!\r\n");
-	// 			calc_init();
-	// 			*calc = 1;
-	// 		}
-	// 		if (memcmp(stringin, "blink", sizeof("blink")) == 0) {
-	// 			uart_puts("LEDDDDDD!\r\n");
-	// 			led_blink(gpio, 1);
-	// 		}
-	// 		if (memcmp(stringin, "stop", sizeof("stop")) == 0) {
-	// 			uart_puts("LEDDDDDD STOP!\r\n");
-	// 			led_blink(gpio, 0);
-	// 		}
-	// 		else{
-	// 			uart_puts(stringin);
-	// 			uart_puts("\n");
-	// 			// char str[16];
-	// 			// int c = -146;
-	// 			// uart_puts(itos(c, str));
-	// 		}
-			
-	// 		reset_string(stringin, i);
-	// 		uart_puts("> ");
-	// 		i = 0;
-	// 	}
-	// 	else if (x == 127 || x == 8) // backspace character
-	// 	{
-	// 		if (i>0)
-	// 		{
-	// 			uart_putc('\b'); // move cursor back
-	// 			uart_putc(' '); // insert space in terminal
-	// 			uart_putc('\b'); // move cursor back before space
-	// 			stringin[i-1] = 0x00; // replace last char with empty
-	// 			i--; // decrement length
-	// 		}
-	// 	}
-	// 	else{
-	// 		stringin[i] = x;
-	// 		uart_putc(stringin[i]);
-	// 		i++;
-	// 	}
-
-	// }
-
 }
