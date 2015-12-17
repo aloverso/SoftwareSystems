@@ -1,23 +1,17 @@
-#ifndef CALC_H
-#define CALC_H
 #include "calc.h"
+
+#ifndef GPIO_H
+#define GPIO_H
+#include "gpio.h"
 #endif
 
 int convert_to_int (unsigned char instr[]){
 	int i = 0;
 	int res = 0;
-	int negative = 0;
-	if(instr[i] == '-'){
-		negative = 1;
-		i++;
-	}
 	while (instr[i] != '\0'){
 		res = res*10;
 		res += instr[i] - 48;
 		i++;
-	}
-	if (negative){
-		res = res*-1;
 	}
 	return res;
 }
@@ -26,14 +20,9 @@ void convert_to_str(int int_in, unsigned char res[]){
 	int j = 0;
 	int cur_num = 0;
 	int k = 0;
-	int negative = 0;
 	char temp;
-	if (int_in < 0){
-		negative = 1;
-		int_in = int_in*-1;
-		j++;
-	}
-	else if (int_in == 0){
+	if (int_in == 0)
+	{
 		res[0] = '0';
 		return;
 	}
@@ -41,7 +30,10 @@ void convert_to_str(int int_in, unsigned char res[]){
 		cur_num = int_in % 10;
 		int_in = int_in/10;
 		res[j] = cur_num + '0';
+		j++;
 	}
+	res[j+1] = '\0';
+	j--;
 	while (j > k){
 		temp = res[k];
 		res[k] = res[j];
@@ -49,9 +41,7 @@ void convert_to_str(int int_in, unsigned char res[]){
 		k++;
 		j--;
 	}
-	if (negative){
-		res[0] = '-';
-	}
+
 }
 
 int do_math(unsigned char instr[], int array_size)
@@ -90,34 +80,23 @@ int do_math(unsigned char instr[], int array_size)
 
 	i = 1;
 	int res = nums[0];
-	uart_puts("\r\n");
 	while (i < j){
 		if(nums[i] == 42){
-			uart_puts("Multiply");
-			uart_puts("\r\n");
 			res *= nums[i+1];
 		}
 		else if (nums[i] == 43){
-			uart_puts("Adding");
-			uart_puts("\r\n");
 			res += nums[i+1];
 		}
 		else if (nums[i] == 45){
-			uart_puts("Subtract");
-			uart_puts("\r\n");
 			res -= nums[i+1];
 		}
 		else if (nums[i] == 47){
-			uart_puts("Divide");
-			uart_puts("\r\n");
 			res = res/nums[i+1];
 		}
 		i += 2;
 	}
 
-	uart_puts("\r\n");
 	convert_to_str(res, strtest);
-	uart_puts("Result is ");
 	uart_puts(strtest);
 	uart_puts("\r\n");
 	reset_string(strtest, 10);

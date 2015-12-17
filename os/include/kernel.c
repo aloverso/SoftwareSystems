@@ -70,27 +70,32 @@ volatile unsigned int CALC_ON; // if in calculator program
 extern void enable_irq ( void );
 extern void enable_fiq ( void );
 
+void help_menu ()
+{
+	uart_puts ("help - show this help menu\r\n");
+	uart_puts ("calc - start calculator program\r\n");
+	uart_puts ("stop - if in calculator, quit program\r\n");
+	uart_puts ("blink x - blink led at x hertz; x is 2 chars max\r\n");
+}
+
 void parse_input ()
 {
-	if (CALC_ON)
+	if (memcmp(stringin, "help", sizeof("help")) == 0) 
+	{
+		help_menu ();
+	}
+	else if (CALC_ON)
 	{
 		if (memcmp(stringin, "stop", sizeof("stop")) == 0) {
 			uart_puts("Quit Calculator\r\n");
 			CALC_ON = 0;
 		}
 		else{
-			uart_puts(stringin);
 			do_math(stringin, index);
-			uart_puts("\r\n");
 		}
 	}
 	else
 	{
-		if (memcmp(stringin, "calc", sizeof("calc")) == 0) {
-			uart_puts("Start Calculator Program!\r\n");
-			CALC_ON = 1;
-		}
-
 		char firstfive[6];
 		int a;
 		for (a=0; a<5; a++)
@@ -99,7 +104,12 @@ void parse_input ()
 		}
 		firstfive[5] = '\0';
 
-		if (memcmp(firstfive, "blink", sizeof("blink")) == 0) {
+		if (memcmp(stringin, "calc", sizeof("calc")) == 0) {
+			uart_puts("Start Calculator Program!\r\n");
+			CALC_ON = 1;
+		}
+
+		else if (memcmp(firstfive, "blink", sizeof("blink")) == 0) {
 			char requested_freq[2]; // no 100+ hz frequencies
 			reset_string(requested_freq, 2);
 			int b;
@@ -156,7 +166,7 @@ void parse_input ()
 			}
 		}
 
-		else{
+		else {
 			uart_puts(stringin);
 			uart_puts("\r\n");
 		}
